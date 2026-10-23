@@ -1,0 +1,93 @@
+{
+  "name": "code-atlas",
+  "displayName": "OUTLANDS Code Atlas",
+  "description": "Local language map and read-only source navigation with explicit project roots.",
+  "version": "0.1.0",
+  "publisher": "TheOutlandsDev",
+  "engines": {
+    "vscode": "^1.100.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished",
+    "onFileSystem:code-atlas"
+  ],
+  "main": "./extension/extension.js",
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": false
+    },
+    "virtualWorkspaces": {
+      "supported": true
+    }
+  },
+  "contributes": {
+    "commands": [
+      {
+        "command": "codeAtlas.openMap",
+        "title": "OUTLANDS: Open Code Map"
+      },
+      {
+        "command": "codeAtlas.refresh",
+        "title": "OUTLANDS: Refresh Code Atlas"
+      },
+      {
+        "command": "codeAtlas.openWorkspace",
+        "title": "OUTLANDS: Open Code Atlas Workspace"
+      },
+      {
+        "command": "codeAtlas.openTreeTests",
+        "title": "Open reviewed test workspace",
+        "icon": "$(beaker)"
+      },
+      {
+        "command": "codeAtlas.runAllReviewedTests",
+        "title": "OUTLANDS: Run all reviewed tests",
+        "icon": "$(beaker)"
+      }
+    ],
+    "views": {
+      "explorer": [
+        {
+          "id": "codeAtlas.sources",
+          "name": "Code Atlas"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "codeAtlas.refresh",
+          "when": "view == codeAtlas.sources",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "codeAtlas.openTreeTests",
+          "when": "view == codeAtlas.sources && viewItem == projectReviewedTests",
+          "group": "navigation"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "codeAtlas.openTreeTests",
+          "when": "false"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "test": "node --test extension/tests/*.test.cjs extension/media/ui.test.cjs"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TheOutlandsDev/code-atlas"
+  },
+  "extensionKind": [
+    "ui"
+  ]
+}

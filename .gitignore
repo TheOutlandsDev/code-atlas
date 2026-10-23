@@ -1,0 +1,29 @@
+# Local configuration and generated discovery state
+.code-atlas/
+policy.json
+Atlas.code-workspace
+state/
+reports/
+
+# Build and editor artifacts
+dist/
+*.vsix
+node_modules/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+.DS_Store
+*.log
+
+# Credentials and machine-local files
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*credentials*.json
+*token*.txt
