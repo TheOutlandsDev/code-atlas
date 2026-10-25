@@ -19,6 +19,8 @@ def main():
     commands = [[sys.executable, '-I', '-B', '-m', 'unittest', 'discover', '-s', 'tests', '-v'], [node, 'extension/tests/core.test.cjs'], [node, 'extension/tests/activation.test.cjs'], [node, 'extension/media/ui.test.cjs'], [sys.executable, '-I', '-B', 'tools/check_release.py']]
     for command in commands:
         subprocess.run(command, cwd=ROOT, env=env, check=True, timeout=60)
+    subprocess.run([sys.executable, '-I', '-B', 'tools/check_setup.py'],
+                   cwd=ROOT, env=env, check=True, timeout=60)
     print('Public synthetic suites passed. These do not run any external project tests.')
 
 
