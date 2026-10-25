@@ -7,7 +7,7 @@ import zipfile
 from xml.sax.saxutils import escape
 
 ROOT = Path(__file__).resolve().parents[1]
-RUNTIME = ['package.json', 'LICENSE', 'README.md', 'SECURITY.md', 'CONTRIBUTING.md', 'CHANGELOG.md', 'docs/configuration.md', 'docs/architecture.md', 'docs/reviewed-workspaces.md', 'docs/troubleshooting.md', 'extension/extension.js', 'extension/policy.js', 'extension/catalog.js', 'extension/readonly.js', 'extension/scanner.js', 'extension/tree.js', 'extension/reviewed.js', 'extension/media/app.js', 'extension/media/styles.css', 'extension/media/index.template.html', 'tools/scan.py', 'examples/policy.example.json']
+RUNTIME = ['package.json', 'LICENSE', 'README.md', 'SECURITY.md', 'CONTRIBUTING.md', 'CHANGELOG.md', 'docs/configuration.md', 'docs/setup-r2.md', 'docs/release-checks.md', 'docs/architecture.md', 'docs/reviewed-workspaces.md', 'docs/troubleshooting.md', 'extension/extension.js', 'extension/policy.js', 'extension/catalog.js', 'extension/readonly.js', 'extension/scanner.js', 'extension/tree.js', 'extension/reviewed.js', 'extension/media/app.js', 'extension/media/styles.css', 'extension/media/index.template.html', 'tools/scan.py', 'examples/policy.example.json']
 
 
 def package():

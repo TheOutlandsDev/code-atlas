@@ -16,7 +16,7 @@ def main():
     env = os.environ.copy()
     # Nested Node test runners may suppress file-level test registration.
     env.pop('NODE_TEST_CONTEXT', None)
-    commands = [[sys.executable, '-I', '-B', '-m', 'unittest', 'discover', '-s', 'tests', '-v'], [node, 'extension/tests/core.test.cjs'], [node, 'extension/tests/activation.test.cjs'], [node, 'extension/media/ui.test.cjs']]
+    commands = [[sys.executable, '-I', '-B', '-m', 'unittest', 'discover', '-s', 'tests', '-v'], [node, 'extension/tests/core.test.cjs'], [node, 'extension/tests/activation.test.cjs'], [node, 'extension/media/ui.test.cjs'], [sys.executable, '-I', '-B', 'tools/check_release.py']]
     for command in commands:
         subprocess.run(command, cwd=ROOT, env=env, check=True, timeout=60)
     print('Public synthetic suites passed. These do not run any external project tests.')
