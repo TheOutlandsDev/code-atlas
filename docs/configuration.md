@@ -5,7 +5,7 @@ Code Atlas reads its private local setup from `CODE_ATLAS_HOME`, defaulting to `
 No source roots are enabled by the repository's example policy. Create a setup with explicit directories:
 
 ```sh
-python3 -I -B tools/configure.py \
+/usr/bin/python3 -I -B tools/configure.py \
   --root /absolute/path/to/projects \
   --root /absolute/path/to/another/project
 ```
@@ -28,9 +28,10 @@ Set the variable for setup and for the VS Code process:
 
 ```sh
 export CODE_ATLAS_HOME="/absolute/path/to/private-atlas"
-python3 -I -B tools/configure.py --root /absolute/path/to/projects
-code --new-window "$CODE_ATLAS_HOME/Atlas.code-workspace"
+/usr/bin/python3 -I -B tools/configure.py --root /absolute/path/to/projects
 ```
+
+Then use the complete install and launch commands in the [revision 2 setup guide](setup-r2.md). Both commands pass `--shared-data-dir` as well as separate user-data, extension and agent/plugin directories. Changing only `CODE_ATLAS_HOME` or only `--user-data-dir` does not provide the same state separation on VS Code 1.143.0. The complete CLI recipe was verified on that build; other builds must support the listed options before you rely on it. Keep workspace trust enabled.
 
 Use a fresh VS Code process when changing this environment variable. An already running VS Code process can keep its original environment. Do not point multiple concurrent setups at the same state directory.
 

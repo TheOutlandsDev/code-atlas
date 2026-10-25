@@ -6,6 +6,14 @@ Check that you configured at least one existing canonical source root and launch
 
 A folder can be excluded, unreadable, outside the allowed roots, or beyond a scan budget. The map is not guaranteed to contain every file on a system.
 
+## A separate instance reuses state or the wrong environment
+
+Use the complete [revision 2 setup commands](setup-r2.md), including `--shared-data-dir` on both installation and launch. VS Code 1.143.0 can otherwise use shared state outside its user-data directory. Keep all six state-directory paths and `CODE_ATLAS_HOME` consistent and close an existing instance using those exact paths before changing them. The recipe is verified on 1.143.0; stop on unknown-option warnings rather than dropping isolation options.
+
+## No workspace trust prompt appears
+
+Keep workspace trust enabled. The generated dashboard has no editable source folders and can already be trusted. To test the ordinary prompt, use an explicitly chosen synthetic folder in a separate test workspace. Declining trust leaves Code Atlas inactive. Revoking trust can leave a cached map visible, but it does not permit further scanning or source navigation.
+
 ## Configuration already exists
 
 The configuration tool refuses to overwrite an existing setup. Inspect and back up your local policy before editing it. For a separate experiment, choose another private `CODE_ATLAS_HOME` rather than deleting state or replacing an active configuration blindly.
