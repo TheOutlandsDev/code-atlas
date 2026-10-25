@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "repository": "TheOutlandsDev/code-atlas",
+  "version": "0.1.0",
+  "tag": "v0.1.0",
+  "setupRevision": 2,
+  "prefix": "code-atlas-0.1.0-setup-r2/",
+  "sourceIdentity": {
+    "repository": "https://github.com/TheOutlandsDev/code-atlas",
+    "tag": "v0.1.0",
+    "commit": "553e87887e6514238b69c1cdebf6494369968a4a",
+    "version": "0.1.0",
+    "license": "MIT",
+    "vsixSha256": "1ef871c1589b52f054f168b74f463afdf21feb9ae90f757f58838b7ee631c99f",
+    "setupGuideRevision": 2,
+    "setupGuideUpdatedOn": "2026-10-23",
+    "setupGuideSha256": "722d48ede38df8a514a42cd544135bff472d0d700929d7dd44c4b8131bce9568",
+    "setupGuideScope": "Release-only instructions revised after the unchanged runtime/setup-helper source tag"
+  },
+  "assets": {
+    "code-atlas-0.1.0.vsix": {
+      "bytes": 47160,
+      "sha256": "1ef871c1589b52f054f168b74f463afdf21feb9ae90f757f58838b7ee631c99f"
+    },
+    "code-atlas-0.1.0-setup-r2.zip": {
+      "bytes": 53023,
+      "sha256": "21fc74ad3901240035b5976697f67b3900961159f48e77a4eb5d100577a434fb"
+    },
+    "SETUP-r2.md": {
+      "bytes": 7369,
+      "sha256": "722d48ede38df8a514a42cd544135bff472d0d700929d7dd44c4b8131bce9568"
+    },
+    "SHA256SUMS-r2": {
+      "bytes": 262,
+      "sha256": "12696c63a97601929cc6ccd030acd5949da34d7517c7d7a18a58ee8800a26022"
+    }
+  },
+  "payloads": {
+    "LICENSE": {
+      "bytes": 1071,
+      "sha256": "59e2d0804192a0babd2b1ea9b00162bf12a8400f940717c0ecbbc186d6511614"
+    },
+    "SETUP.md": {
+      "bytes": 7369,
+      "sha256": "722d48ede38df8a514a42cd544135bff472d0d700929d7dd44c4b8131bce9568"
+    },
+    "SOURCE.json": {
+      "bytes": 534,
+      "sha256": "b04d1e6557e76d9df0c31d5e434ac3e6d192649b426e9c57cce78da1a887a8e0"
+    },
+    "code-atlas-0.1.0.vsix": {
+      "bytes": 47160,
+      "sha256": "1ef871c1589b52f054f168b74f463afdf21feb9ae90f757f58838b7ee631c99f"
+    },
+    "examples/policy.example.json": {
+      "bytes": 2024,
+      "sha256": "55c3cb6689174b5c46d5fa6df0fdacaebf713f860dddc5d157002e94e80000ca"
+    },
+    "tools/configure.py": {
+      "bytes": 2884,
+      "sha256": "9c696b43c55bbc722e792421b8e0e36089e0f35cc8d0f278c8cefed798b0450c"
+    }
+  }
+}
