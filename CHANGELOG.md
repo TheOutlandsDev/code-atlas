@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Align the README/configuration/troubleshooting docs with release setup revision 2 and its explicit shared-data/agent state directories.
+- Add a pinned public release lock, ZIP/checksum/setup-command validation, synthetic regression tests and read-only GitHub Actions checks.
+- Include the current setup and release-check documentation in future development VSIX packages. Published v0.1.0 release assets and runtime code remain unchanged.
+
 ## 0.1.0
 
 Initial portable Linux release of Code Atlas.

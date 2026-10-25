@@ -26,22 +26,28 @@ flowchart LR
     F --> G[Your manually invoked tools]
 ```
 
-## Quick start
+## Quick start — setup revision 2
 
-Clone or download this repository into a development directory. From its root:
+Use the tested release setup rather than installing into an existing IDE profile:
+
+- [Download the revision 2 setup ZIP](https://github.com/TheOutlandsDev/code-atlas/releases/download/v0.1.0/code-atlas-0.1.0-setup-r2.zip)
+- [Download SHA256SUMS-r2](https://github.com/TheOutlandsDev/code-atlas/releases/download/v0.1.0/SHA256SUMS-r2)
+- [Follow the complete revision 2 setup guide](docs/setup-r2.md)
+
+From the download folder, verify and extract the bundle:
 
 ```sh
-python3 -I -B tools/configure.py --root /absolute/path/to/your/projects
-python3 -I -B tools/package.py
-code --install-extension dist/code-atlas-0.1.0.vsix
-code --new-window "$HOME/.code-atlas/Atlas.code-workspace"
+sha256sum --check --ignore-missing SHA256SUMS-r2
+unzip code-atlas-0.1.0-setup-r2.zip
+cd code-atlas-0.1.0-setup-r2
+sha256sum --check SHA256SUMS
 ```
 
-Replace the example root with a folder you own and want to index. Repeat `--root` to add another root during initial configuration. Configuration is explicit: there are no default source roots, and the setup tool refuses to overwrite an existing configuration.
+Confirm the ZIP is **OK** before extracting it and all six bundled payload files are **OK** afterward. Follow [the setup guide](docs/setup-r2.md) to configure explicit roots and install/launch with separate user-data, extension, **shared-data** and agent/plugin directories. The complete CLI recipe was verified on **VS Code 1.143.0**; the extension's minimum remains 1.100. Stop if another build warns about unknown options or rejects them.
 
-The default private configuration directory is `~/.code-atlas`. To use another location, set `CODE_ATLAS_HOME` to an absolute, canonical directory before configuring and launch VS Code with the same environment. See [configuration](docs/configuration.md) for the complete procedure.
+The default private configuration home is `~/.code-atlas`. The setup tool refuses broad roots or an existing configuration. Set a new `CODE_ATLAS_HOME` outside your sources for a separate experiment and keep the same complete state-directory options on install and launch. Configuration and environment details are in [configuration](docs/configuration.md).
 
-Review the workspace and trust it only after inspecting its configuration and the extension source. In VS Code, choose **OUTLANDS: Open Code Map** from the Command Palette or use the **Code Atlas** Explorer view. Use **Refresh map** after changing configuration or when you want a new local scan.
+Keep workspace trust enabled and inspect the workspace and extension before trusting them. An empty dashboard can already be trusted; this alone does not mean trust is disabled. In VS Code, choose **OUTLANDS: Open Code Map** from the Command Palette or use the **Code Atlas** Explorer view. **Refresh map** requests another bounded scan.
 
 ## Find a project
 
@@ -69,10 +75,12 @@ python3 -I -B tools/check.py
 python3 -I -B tools/package.py
 ```
 
-The check command runs the Python, extension-core, and map DOM suites. They use synthetic fixtures and local mocks. A passing suite is not a claim that arbitrary projects build, that every filesystem race is prevented, or that an installed VS Code window has completed a manual acceptance check.
+The check command runs the Python, extension-core, and map DOM suites, plus offline release/documentation checks. The [release checks](docs/release-checks.md) also verify the pinned public ZIP and checksums in GitHub Actions; they do not start VS Code or inspect private roots. They use synthetic fixtures and local mocks. A passing suite is not a claim that arbitrary projects build, that every filesystem race is prevented, or that an installed VS Code window has completed a manual acceptance check.
 
-Packaging is offline and uses an explicit runtime allowlist. It refuses to overwrite an existing VSIX; preserve an earlier artifact or use a clean checkout before packaging again. Building a VSIX does not publish it to the VS Code Marketplace.
+Packaging is offline and uses an explicit runtime allowlist. It refuses to overwrite an existing VSIX; preserve an earlier artifact or use a clean checkout before packaging again. Building a VSIX does not publish it to the VS Code Marketplace. A development build from a changed checkout can have different bytes from the pinned published installer; release checks validate the published artifact separately.
 
+- [Current revision 2 setup](docs/setup-r2.md)
+- [Automated release checks](docs/release-checks.md)
 - [Configuration and limits](docs/configuration.md)
 - [Architecture and data flow](docs/architecture.md)
 - [Reviewed workspaces](docs/reviewed-workspaces.md)

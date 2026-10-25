@@ -15,7 +15,15 @@ python3 -I -B tools/check.py
 python3 -I -B tools/package.py
 ```
 
-Use a dedicated directory of synthetic projects for manual VS Code checks. Inspect the generated workspace before trusting it. Confirm that the map opens, language filtering works, source tabs reject edits, excluded files are unavailable, and a configured reviewed shortcut opens only its exact workspace.
+`tools/check.py` includes offline release/documentation checks and their synthetic regression tests. Before changing a release contract, read [automated release checks](docs/release-checks.md). To verify downloaded public assets explicitly, run:
+
+```sh
+python3 -I -B tools/check_release.py --assets-dir /absolute/path/to/public-release-downloads
+```
+
+Only four fixed artifact names are read from that directory. Public downloads are opt-in locally (`--download`) and run automatically in the read-only GitHub Actions job.
+
+Use the complete [revision 2 setup guide](docs/setup-r2.md) and a dedicated directory of synthetic projects for manual VS Code checks. Inspect the generated workspace before trusting it. Confirm that the map opens, language filtering works, source tabs reject edits, excluded files are unavailable, and a configured reviewed shortcut opens only its exact workspace.
 
 ## Change expectations
 
