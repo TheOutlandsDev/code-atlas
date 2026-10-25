@@ -15,13 +15,21 @@ python3 -I -B tools/check.py
 python3 -I -B tools/package.py
 ```
 
-`tools/check.py` includes offline release/documentation checks and their synthetic regression tests. Before changing a release contract, read [automated release checks](docs/release-checks.md). To verify downloaded public assets explicitly, run:
+`tools/check.py` includes offline release/documentation checks, their synthetic regression tests, and an actual setup-helper/scanner workflow using temporary sample projects. The workflow checks language grouping, source preservation, exclusions, create/delete refresh, owner-private state and refusal to overwrite configuration. Before changing a release contract, read [automated release checks](docs/release-checks.md). To verify downloaded public assets explicitly, run:
 
 ```sh
 python3 -I -B tools/check_release.py --assets-dir /absolute/path/to/public-release-downloads
 ```
 
 Only four fixed artifact names are read from that directory. Public downloads are opt-in locally (`--download`) and run automatically in the read-only GitHub Actions job.
+
+To repeat the setup/scan workflow with the verified helper and scanner from those released artifacts, run:
+
+```sh
+python3 -I -B tools/check_setup.py --assets-dir /absolute/path/to/public-release-downloads
+```
+
+With `--download` instead of `--assets-dir`, the checker downloads only the four pinned public assets and removes its temporary downloads afterward. Without either option, it uses the public checkout offline. All modes use newly generated synthetic roots and a temporary configuration home; no VS Code window or downstream tests start.
 
 Use the complete [revision 2 setup guide](docs/setup-r2.md) and a dedicated directory of synthetic projects for manual VS Code checks. Inspect the generated workspace before trusting it. Confirm that the map opens, language filtering works, source tabs reject edits, excluded files are unavailable, and a configured reviewed shortcut opens only its exact workspace.
 
