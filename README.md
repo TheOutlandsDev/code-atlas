@@ -6,6 +6,31 @@ Code Atlas turns explicitly selected development folders into a language network
 
 This first portable release targets **Linux**, **VS Code 1.100 or newer**, and **Python 3.10 or newer**. It uses the VS Code extension host and Python standard library; it has no runtime npm dependencies and does not need an account or hosted service.
 
+## See the map
+
+![Code Atlas webview showing fictional Rust projects and the selected Demo State Engine](https://raw.githubusercontent.com/TheOutlandsDev/TheOutlandsDev/main/assets/code-atlas-demo.png)
+
+*The shipped webview rendered in a browser with an authored fictional catalog. Demonstrates the map, filters and project selection; it is not proof of VS Code integration, source scanning or project tests. [Screenshot provenance](https://github.com/TheOutlandsDev/TheOutlandsDev/blob/main/assets/SHOWCASE.md).*
+
+## Requirements, first try and status
+
+| Requirement | Current preview |
+| --- | --- |
+| Platform | Linux with `/proc`; other operating systems are not validated here. |
+| Editor | VS Code 1.100+; the complete separate-instance recipe was verified on VS Code 1.143.0. |
+| Runtime | Python 3.10+ at `/usr/bin/python3`. Node.js 18+ is needed only for development QA. |
+| Your input | An existing project directory you own and explicitly choose; there are no default source roots. |
+| Status | Linux preview. Source availability and static syntax metadata are separate from build, runtime and project-test results. |
+
+Check the two runtime versions before following the [complete revision 2 setup guide](docs/setup-r2.md):
+
+```sh
+code --version
+/usr/bin/python3 --version
+```
+
+Use the [revision 2 download and checksum steps below](#quick-start--setup-revision-2), then keep all six state-directory options from the setup guide on both install and launch. In that reviewed VS Code instance, choose **OUTLANDS: Open Code Map**, select a language or search for a project, then choose **Browse source files**. The [release checks](docs/release-checks.md) describe the recorded checks and their scope.
+
 ## What it does
 
 - Groups discovered source roots by language in an interactive, keyboard-accessible map.
