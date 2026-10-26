@@ -8,6 +8,14 @@ This first portable release targets **Linux**, **VS Code 1.100 or newer**, and *
 
 ## See the map
 
+**[Live demo — explore Code Atlas in your browser](https://connor-oshea-outlands.thatrobotguy.chatgpt.site/demos/code-atlas/)**
+
+No installation is needed. Filter languages, search six fictional projects,
+select a source root, and pan or zoom the map. This is a browser preview of the
+public webview with an authored catalog; it does not run VS Code, scan folders,
+read source files or execute project tests. Use the setup guide below for the
+actual Linux/VS Code extension.
+
 ![Code Atlas webview showing fictional Rust projects and the selected Demo State Engine](https://raw.githubusercontent.com/TheOutlandsDev/TheOutlandsDev/main/assets/code-atlas-demo.png)
 
 *The shipped webview rendered in a browser with an authored fictional catalog. Demonstrates the map, filters and project selection; it is not proof of VS Code integration, source scanning or project tests. [Screenshot provenance](https://github.com/TheOutlandsDev/TheOutlandsDev/blob/main/assets/SHOWCASE.md).*
