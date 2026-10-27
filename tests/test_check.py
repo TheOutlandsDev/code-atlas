@@ -96,7 +96,7 @@ class NodeGuardTests(unittest.TestCase):
         self.assert_rejected(*self.invoke(probe_error=error))
 
     def test_probe_encode_error_fails_cleanly(self):
-        error = UnicodeEncodeError('ascii', '雪', 0, 1, 'synthetic invalid character')
+        error = UnicodeEncodeError('ascii', '\u96ea', 0, 1, 'synthetic invalid character')
         self.assert_rejected(*self.invoke(probe_error=error))
 
     def test_probe_translate_error_fails_cleanly(self):
