@@ -227,7 +227,9 @@ def main():
         settings = state / 'vscode-user/User'
         settings.mkdir(parents=True)
         new_json(settings / 'settings.json', {'workbench.startupEditor': 'none',
-                 'window.newWindowDimensions': 'maximized', 'window.restoreWindows': 'none'})
+                 'window.newWindowDimensions': 'maximized', 'window.restoreWindows': 'none',
+                 'workbench.secondarySideBar.defaultVisibility': 'hidden',
+                 'workbench.activityBar.location': 'hidden', 'window.zoomLevel': -1})
         new_json(session / 'session.json', {'kind': 'code-atlas-native-acceptance-v1',
                  'session': str(session), 'fixtures': str(fixtures), 'state': str(state)})
         new_json(session / 'fixture-baseline.json', baseline)

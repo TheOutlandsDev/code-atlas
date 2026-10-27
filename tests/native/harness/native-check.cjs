@@ -88,7 +88,7 @@ exports.run = async function run() {
     check('Native document uses read-only scheme',document.uri.scheme==='code-atlas');
     check('Native document contains fixture bytes',document.getText()===baseline.toString('utf8'));
     await capture('readonly-source');
-    check('File-system registration is read-only',vscode.workspace.isWritableFileSystem('code-atlas')===false);
+    check('File-system registration is read-only',vscode.workspace.fs.isWritableFileSystem('code-atlas')===false);
     check('Native stat advertises read-only',(await vscode.workspace.fs.stat(uri)).permissions===vscode.FilePermission.Readonly);
     check('Native file-system write denied',await denied(()=>vscode.workspace.fs.writeFile(uri,Buffer.from('unexpected write\n'))));
     check('Write attempt preserved fixture',digest(fs.readFileSync(original))===digest(baseline));
