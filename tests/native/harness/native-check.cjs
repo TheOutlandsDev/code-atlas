@@ -17,13 +17,13 @@ exports.run = async function run() {
   assert.equal(context.state,path.join(session,'state'));
   assert.equal(fs.realpathSync(session),session);
   const phase = process.env.ATLAS_ACCEPTANCE_PHASE;
-  assert.ok(['first','restart'].includes(phase));
+  assert.ok(['untrusted-before','first','restart','untrusted-after'].includes(phase));
   const report = {status:'RUNNING',platform:process.platform,vscodeVersion:vscode.version,phase,
     extension:'TheOutlandsDev.code-atlas',syntheticOnly:true,checks:[],manualWebviewAcceptance:'NOT_RUN_BY_NATIVE_API_TEST',
     scope:'Native VS Code APIs, published VSIX and disposable fixtures only. Not a private-project or production check.'};
   const output = path.join(session,'native-'+phase+'.json');
   const save = () => fs.writeFileSync(output,JSON.stringify(report,null,2)+'\n',{mode:0o600});
-  const check = (name, value) => { assert.ok(value,name);report.checks.push({name,result:'PASS'});save(); };
+  const check = (name, value) => { if(!value)report.failedCheck=name; assert.ok(value,name);report.checks.push({name,result:'PASS'});save(); };
   const pause = ms => new Promise(resolve=>setTimeout(resolve,ms));
   const capture = async name => {
     await pause(1500);
@@ -44,10 +44,16 @@ exports.run = async function run() {
   try {
     check('Real Linux extension host',process.platform==='linux');
     check('Expected VS Code build',vscode.version==='1.143.0');
-    if(!vscode.workspace.isTrusted){report.status='BLOCKED_WORKSPACE_TRUST';save();throw new Error('Workspace trust is required. Do not disable it.');}
     check('Workspace trust enabled',vscode.workspace.getConfiguration('security.workspace.trust').get('enabled')===true);
-    check('Exact isolated workspace opened',vscode.workspace.workspaceFile.fsPath===path.join(context.state,'Atlas.code-workspace'));
+    const expectedWorkspace=phase==='untrusted-after'?path.join(session,'untrusted','Untrusted.code-workspace'):path.join(context.state,'Atlas.code-workspace');
+    check('Exact isolated workspace opened',vscode.workspace.workspaceFile.fsPath===expectedWorkspace);
     const extension=vscode.extensions.getExtension('TheOutlandsDev.code-atlas');
+    if(phase.startsWith('untrusted-')){
+      check('Generated control workspace remains untrusted',vscode.workspace.isTrusted===false);
+      check('Published extension stays inactive in Restricted Mode',!extension||!extension.isActive);
+      report.status='PASS';save();return;
+    }
+    check('Only explicitly provisioned fixture workspace is trusted',vscode.workspace.isTrusted===true);
     check('Published extension registered',Boolean(extension));
     check('Published extension version',extension.packageJSON.version==='0.1.0');
     check('Installed VSIX rather than source development build',extension.extensionPath.startsWith(path.join(context.state,'vscode-extensions')+path.sep));

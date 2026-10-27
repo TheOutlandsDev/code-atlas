@@ -12,6 +12,7 @@ import os
 from pathlib import Path
 import re
 import shutil
+import sqlite3
 import subprocess
 import sys
 import tarfile
@@ -88,6 +89,32 @@ def ide_archive(work, supplied, lock):
         package = json.load(bundle.extractfile('VSCode-linux-x64/resources/app/package.json'))
         require(package['version'] == lock['version'], 'IDE package version differs from its lock')
     return archive
+
+
+
+def provision_fixture_trust(state, workspace):
+    """Seed only this generated workspace in a stopped, disposable 1.143 profile.
+
+    This is a pinned CI fixture, not a user-profile migration. The reviewed IDE
+    stores content.trust.model.key in APPLICATION_SHARED/sharedStorage/state.vscdb.
+    A fresh untrusted run must pass before this function is called.
+    """
+    database = state / 'vscode-shared/sharedStorage/state.vscdb'
+    require(database.is_file() and not database.is_symlink(), 'Expected isolated trust store missing')
+    require(workspace == state / 'Atlas.code-workspace' and workspace.is_file() and
+            not workspace.is_symlink(), 'Trust target must be the generated workspace file')
+    key = 'content.trust.model.key'
+    value = {'uriTrustInfo': [{'uri': {'scheme': 'file', 'authority': '',
+                                      'path': workspace.as_posix()}, 'trusted': True}]}
+    with sqlite3.connect(database, timeout=10) as db:
+        require(db.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='ItemTable'").fetchone(),
+                'Unexpected pinned IDE storage schema')
+        prior = db.execute('SELECT value FROM ItemTable WHERE key=?', (key,)).fetchone()
+        require(prior is None or json.loads(prior[0]).get('uriTrustInfo') == [],
+                'Refusing to replace pre-existing trusted locations')
+        db.execute('INSERT OR REPLACE INTO ItemTable(key,value) VALUES(?,?)', (key, json.dumps(value)))
+        require(json.loads(db.execute('SELECT value FROM ItemTable WHERE key=?', (key,)).fetchone()[0]) == value,
+                'Narrow fixture trust provisioning failed')
 
 
 def main():
@@ -209,14 +236,26 @@ def main():
         listed = checked('extensions', [str(code), *flags, '--list-extensions', '--show-versions'])
         require('theoutlandsdev.code-atlas@0.1.0' in listed.stdout.lower(), 'Published VSIX not registered')
         env['ATLAS_ACCEPTANCE_SESSION'] = str(session)
-        for launch in ['first', 'restart']:
+        untrusted = session / 'untrusted/Untrusted.code-workspace'
+        untrusted.parent.mkdir()
+        new_json(untrusted, {'folders': [], 'settings': {'security.workspace.trust.enabled': True}})
+        for launch in ['untrusted-before', 'first', 'restart', 'untrusted-after']:
+            if launch == 'first':
+                phase('Provision trust for the exact generated workspace file only')
+                require(hashes(fixtures) == baseline, 'Generated sources changed before trust review')
+                provision_fixture_trust(state, state / 'Atlas.code-workspace')
+                report['trust_setup'] = 'Exact generated workspace file in a disposable pinned-version profile only'
+            workspace = untrusted if launch == 'untrusted-after' else state / 'Atlas.code-workspace'
             phase('Real native extension host: ' + launch)
             env['ATLAS_ACCEPTANCE_PHASE'] = launch
             checked('native-' + launch, [str(code), *flags, '--sync', 'off', '--new-window', '--wait',
                     '--extensionDevelopmentPath=' + str(ROOT / 'tests/native/harness'),
                     '--extensionTestsPath=' + str(ROOT / 'tests/native/harness/native-check.cjs'),
-                    str(state / 'Atlas.code-workspace')], 180)
+                    str(workspace)], 180)
             result = json.loads((session / ('native-' + launch + '.json')).read_text())
+            report['last_native_result'] = {'launch': launch, 'status': result.get('status'),
+                    'last_passed_check': result.get('checks', [{}])[-1].get('name'),
+                    'failed_check': result.get('failedCheck')}
             require(result['status'] == 'PASS' and result['platform'] == 'linux', 'Native assertions failed')
             require(hashes(fixtures) == baseline and file_sha(state / 'policy.json') == policy_hash and
                     file_sha(state / 'Atlas.code-workspace') == workspace_hash,
@@ -224,7 +263,7 @@ def main():
             report['phases'].append({'launch': launch, 'assertions': len(result['checks']), 'result': 'PASS'})
             report['native_executed'] = True
         report.update(status='PASS', fixture_bytes_restored=True, setup_configuration_preserved=True,
-                      isolated_setting_and_catalog_persisted=True,
+                      isolated_setting_and_catalog_persisted=True, unrelated_workspace_remained_untrusted=True,
                       capture_scope='Actual IDE on a private CI virtual display; manual UI input remains separate')
         print('Native API acceptance passed on first launch and restart. Manual UI input remains separate.', flush=True)
     except Exception as error:
@@ -233,7 +272,8 @@ def main():
     finally:
         session = work / 'session'
         if session.exists():
-            for name in ['native-first.json', 'native-restart.json', 'first-map.png', 'first-readonly-source.png',
+            for name in ['native-untrusted-before.json', 'native-untrusted-after.json',
+                         'native-first.json', 'native-restart.json', 'first-map.png', 'first-readonly-source.png',
                          'restart-map.png', 'restart-readonly-source.png']:
                 source = session / name
                 if source.is_file():
