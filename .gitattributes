@@ -1,0 +1,5 @@
+# Preserve the exact bytes pinned by the published revision 2 release lock.
+docs/setup-r2.md -text
+LICENSE -text
+tools/configure.py -text
+examples/policy.example.json -text

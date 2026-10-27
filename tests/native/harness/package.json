@@ -1,0 +1,11 @@
+{
+  "name": "code-atlas-acceptance-harness",
+  "displayName": "Code Atlas disposable acceptance harness",
+  "version": "0.0.0",
+  "publisher": "local-acceptance",
+  "license": "MIT",
+  "main": "./extension.cjs",
+  "activationEvents": [],
+  "engines": {"vscode": "^1.100.0"},
+  "description": "Local test host only; no project execution or production integration."
+}
