@@ -122,8 +122,11 @@ def main():
     parser.add_argument('--ide-archive', type=Path, help='Use the same hash-pinned official archive already downloaded')
     parser.add_argument('--work-dir', type=Path, help='New absolute external working directory; retained for diagnosis')
     parser.add_argument('--artifacts-dir', type=Path, help='New absolute directory for sanitized public test evidence')
+    parser.add_argument('--ci-window-manager', action='store_true', help='Start an owned Openbox only on a GitHub CI virtual display')
     parser.add_argument('--verify-inputs', action='store_true', help='Check public artifacts only; do not install or start VS Code')
     args = parser.parse_args()
+    require(not args.ci_window_manager or (os.environ.get('GITHUB_ACTIONS') == 'true' and os.environ.get('DISPLAY')),
+            'The owned window manager is limited to the GitHub CI virtual display')
     require(args.verify_inputs or (sys.platform == 'linux' and Path('/proc/self/fd').is_dir()),
             'Native execution requires Linux with /proc')
     require(args.verify_inputs or (os.environ.get('DISPLAY') or os.environ.get('WAYLAND_DISPLAY')),
@@ -145,6 +148,7 @@ def main():
     def phase(name):
         report['phase'] = name
         print('Native acceptance:', name, flush=True)
+    manager = None
     try:
         phase('Verify pinned published release inputs')
         lock = release.check_repository(ROOT)
@@ -215,6 +219,10 @@ def main():
                     ['unknown option', 'not a known option', 'unrecognized option']),
                     'Unsupported IDE option: ' + name)
             return result
+        if args.ci_window_manager:
+            require(shutil.which('openbox'), 'CI virtual-display window manager is missing')
+            manager = subprocess.Popen(['openbox', '--sm-disable'], env=env, stdin=subprocess.DEVNULL,
+                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         phase('Probe the exact IDE and all six separate-state options')
         version = checked('version', [str(code), *flags, '--version'])
         require(version.stdout.splitlines()[0].strip() == '1.143.0', 'Unexpected native IDE version')
@@ -271,6 +279,13 @@ def main():
         report.update(status='FAIL', error_type=type(error).__name__)
         raise
     finally:
+        if manager is not None and manager.poll() is None:
+            manager.terminate()
+            try:
+                manager.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                manager.kill()
+                manager.wait(timeout=5)
         session = work / 'session'
         if session.exists():
             for name in ['native-untrusted-before.json', 'native-untrusted-after.json',

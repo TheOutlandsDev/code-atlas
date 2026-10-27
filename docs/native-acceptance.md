@@ -10,6 +10,8 @@ Use Linux x64 with an X display, Python 3.12 for this test driver, `/usr/bin/pyt
 xvfb-run -a -s "-screen 0 1920x1440x24" python3 -I -B tools/check_native.py
 ```
 
+The CI workflow also passes `--ci-window-manager` to start and stop its own Openbox instance inside Xvfb so the maximized window fills the capture. This option refuses execution outside GitHub CI; it does not configure a developer desktop.
+
 The driver downloads the four pinned revision 2 release assets and Microsoft's exact Linux editor archive. It checks sizes, SHA-256 digests, ZIP contents and the editor package version before execution. The [IDE lock](../tests/native/ide-lock.json) identifies the version-specific Microsoft download. It creates a private temporary HOME, seven original fictional source files, a new Code Atlas configuration and all six separate editor state directories. It does not inspect existing projects or inherit developer credentials.
 
 For an already downloaded, matching Microsoft archive, add `--ide-archive /absolute/path/to/code-1.143.0-linux-x64.tar.gz`. `--work-dir` and `--artifacts-dir` must name new absolute directories. Work directories are retained for diagnosis; the driver does not remove an existing directory. On another operating system, `--verify-inputs` checks the pinned downloads only and reports that native execution was not run.
