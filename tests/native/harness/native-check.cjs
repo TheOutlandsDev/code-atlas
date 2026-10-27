@@ -79,6 +79,8 @@ exports.run = async function run() {
     check('No test workspaces configured',catalog.projects.every(p=>p.testStatus==='NOT_CONFIGURED'));
     const panel=await vscode.commands.executeCommand('codeAtlas.openMap');
     check('Native webview panel created',panel&&panel.webview&&typeof panel.webview.html==='string');
+    await vscode.commands.executeCommand('workbench.action.closeSidebar');
+    await vscode.commands.executeCommand('workbench.action.closeAuxiliaryBar');
     panel.reveal(vscode.ViewColumn.One);
     await capture('map');
     check('Native source selection command',await vscode.commands.executeCommand('codeAtlas.openProject',python.id,'Python')===true);

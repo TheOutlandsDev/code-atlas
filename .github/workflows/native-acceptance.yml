@@ -23,7 +23,7 @@ jobs:
           sudo apt-get install -y --no-install-recommends xvfb imagemagick libnss3 libgbm1 libxkbfile1 libsecret-1-0 libgtk-3-0 libasound2
       - name: Exercise installed extension on first launch and restart
         run: >-
-          xvfb-run -a -s "-screen 0 1440x1000x24"
+          xvfb-run -a -s "-screen 0 1920x1440x24"
           python3 -I -B tools/check_native.py
           --artifacts-dir "$RUNNER_TEMP/code-atlas-native-artifacts"
       - name: Retain scoped native reports and fictional captures
