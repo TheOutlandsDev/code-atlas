@@ -2,6 +2,7 @@
 """Run the public offline synthetic test suites with no project discovery."""
 import os
 from pathlib import Path
+import re
 import shutil
 import subprocess
 import sys
@@ -13,6 +14,26 @@ def main():
     node = shutil.which('node')
     if not node:
         sys.exit('Node.js >=18 is required for offline JavaScript tests')
+
+    # Probe the selected Node executable with --version
+    try:
+        result = subprocess.run(
+            [node, '--version'],
+            cwd=ROOT,
+            check=True,
+            timeout=10,
+            text=True,
+            capture_output=True
+        )
+        version_output = result.stdout.strip()
+    except (subprocess.CalledProcessError, subprocess.TimeoutExpired, OSError):
+        sys.exit('Node.js >=18 is required for offline JavaScript tests')
+
+    # Validate version output format
+    match = re.match(r'^v([0-9]+)\.([0-9]+)\.([0-9]+)$', version_output)
+    if not match or int(match.group(1)) < 18:
+        sys.exit('Node.js >=18 is required for offline JavaScript tests')
+
     env = os.environ.copy()
     # Nested Node test runners may suppress file-level test registration.
     env.pop('NODE_TEST_CONTEXT', None)
