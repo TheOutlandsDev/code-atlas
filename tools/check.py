@@ -26,7 +26,7 @@ def main():
             capture_output=True
         )
         version_output = result.stdout.strip()
-    except (subprocess.CalledProcessError, subprocess.TimeoutExpired, OSError):
+    except (subprocess.CalledProcessError, subprocess.TimeoutExpired, OSError, UnicodeError):
         sys.exit('Node.js >=18 is required for offline JavaScript tests')
 
     # Validate version output format
