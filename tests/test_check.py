@@ -1,9 +1,10 @@
-"""Isolated regression checks. Node and all QA subprocesses are mocked."""
+"""Isolated Node preflight checks using mocks and a synthetic executable."""
 import importlib.util
 import io
 import os
 from pathlib import Path
 import subprocess
+import tempfile
 import types
 import unittest
 from unittest import mock
@@ -89,6 +90,36 @@ class NodeGuardTests(unittest.TestCase):
 
     def test_probe_timeout_fails_cleanly(self):
         self.assert_rejected(*self.invoke(probe_error=subprocess.TimeoutExpired([NODE, '--version'], 10)))
+
+    def test_probe_decode_error_fails_cleanly(self):
+        error = UnicodeDecodeError('utf-8', b'\xff', 0, 1, 'synthetic invalid byte')
+        self.assert_rejected(*self.invoke(probe_error=error))
+
+    def test_probe_encode_error_fails_cleanly(self):
+        error = UnicodeEncodeError('ascii', '\u96ea', 0, 1, 'synthetic invalid character')
+        self.assert_rejected(*self.invoke(probe_error=error))
+
+    def test_probe_translate_error_fails_cleanly(self):
+        error = UnicodeTranslateError('x', 0, 1, 'synthetic translation failure')
+        self.assert_rejected(*self.invoke(probe_error=error))
+
+    @unittest.skipUnless(os.name == 'posix', 'Synthetic executable probe requires POSIX')
+    def test_invalid_probe_bytes_stop_before_qa(self):
+        with tempfile.TemporaryDirectory() as directory:
+            node = Path(directory) / 'node'
+            node.write_text(
+                '#!/usr/bin/python3\nimport sys\nsys.stdout.buffer.write(bytes([255]))\n',
+                encoding='utf-8',
+            )
+            node.chmod(0o700)
+            original_run = subprocess.run
+            with mock.patch.object(runner.shutil, 'which', return_value=str(node)), \
+                 mock.patch.object(runner.subprocess, 'run', wraps=original_run) as process:
+                with self.assertRaises(SystemExit) as caught:
+                    runner.main()
+            self.assertEqual(str(caught.exception), 'Node.js >=18 is required for offline JavaScript tests')
+            self.assertEqual(process.call_count, 1)
+            self.assertEqual(process.call_args.args[0], [str(node), '--version'])
 
     def test_probe_is_bounded_and_nested_suite_environment_preserved(self):
         error, calls, _ = self.invoke()
