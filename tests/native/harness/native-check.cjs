@@ -70,7 +70,8 @@ exports.run = async function run() {
     const scan=await vscode.commands.executeCommand('codeAtlas.refresh');
     check('Actual scanner completed',scan&&scan.status==='PASS');
     const catalog=api.getCatalog();
-    check('Only explicit disposable roots cataloged',catalog.projects.length>0&&catalog.projects.every(p=>p.rootPath.startsWith(context.fixtures+path.sep)));
+    const expectedRoots=new Set([context.fixtures,...['python-demo','rust-demo','typescript-demo'].map(name=>path.join(context.fixtures,name))]);
+    check('Only the explicit fixture base and three generated projects cataloged',catalog.projects.length===expectedRoots.size&&catalog.projects.every(p=>expectedRoots.has(p.rootPath)));
     const python=catalog.projects.find(p=>p.rootPath===root);
     check('Python fixture discovered',Boolean(python));
     check('Rust fixture discovered',catalog.projects.some(p=>p.languages.includes('Rust')));
