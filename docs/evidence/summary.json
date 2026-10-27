@@ -1,0 +1,45 @@
+{
+  "status": "PASS",
+  "synthetic_only": true,
+  "native_executed": true,
+  "manual_ui_acceptance": "NOT_RUN",
+  "phases": [
+    "PUBLISHED_INPUT_HASHES_VERIFIED",
+    {
+      "launch": "untrusted-before",
+      "assertions": 6,
+      "result": "PASS"
+    },
+    {
+      "launch": "first",
+      "assertions": 38,
+      "result": "PASS"
+    },
+    {
+      "launch": "restart",
+      "assertions": 39,
+      "result": "PASS"
+    },
+    {
+      "launch": "untrusted-after",
+      "assertions": 6,
+      "result": "PASS"
+    }
+  ],
+  "phase": "Real native extension host: untrusted-after",
+  "vscode": "1.143.0",
+  "ide_sha256": "89302bd9631307a49f3b18a570ce588bf7c53aa4169bf4fb36051a6e76f5e205",
+  "vsix_sha256": "1ef871c1589b52f054f168b74f463afdf21feb9ae90f757f58838b7ee631c99f",
+  "last_native_result": {
+    "launch": "untrusted-after",
+    "status": "PASS",
+    "last_passed_check": "Published extension stays inactive in Restricted Mode",
+    "failed_check": null
+  },
+  "trust_setup": "Exact generated workspace file in a disposable pinned-version profile only",
+  "fixture_bytes_restored": true,
+  "setup_configuration_preserved": true,
+  "isolated_setting_and_catalog_persisted": true,
+  "unrelated_workspace_remained_untrusted": true,
+  "capture_scope": "Actual IDE on a private CI virtual display; manual UI input remains separate"
+}

@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "status": "PASS",
+  "workflow_run": "https://github.com/TheOutlandsDev/code-atlas/actions/runs/40439309883",
+  "checked_commit": "d8542ac6f961c3456659cf9d77efaf29d04b3514",
+  "platform": "GitHub-hosted Ubuntu 22.04 x64 with Xvfb/Openbox",
+  "vscode": "1.143.0",
+  "release": "v0.1.0",
+  "setup_revision": 2,
+  "assertions": {
+    "first_launch": 38,
+    "restart": 39,
+    "restricted_mode_before": 6,
+    "unrelated_workspace_after": 6,
+    "total": 89
+  },
+  "manual_desktop_acceptance": "NOT_RUN",
+  "capture_method": "Actual native CI virtual display; API-driven test helper, not a manual click-through. No screenshot content was edited.",
+  "synthetic_only": true,
+  "files": {
+    "native-first.json": {
+      "bytes": 3834,
+      "sha256": "70ff143de5df295103d2552674e9de1a9acb29e441b7f27d61a2571fc1b46bc7"
+    },
+    "native-linux-map.png": {
+      "bytes": 534072,
+      "sha256": "a5c7ce7697e838e1cc90231cf6eb6e32adfa46a9d1aba584777a5351aee4f760"
+    },
+    "native-linux-source.png": {
+      "bytes": 56937,
+      "sha256": "7ad5ad760fb1ea6add71e79380ad80fe346c17bb5e7d4cde8dc45dae14af8c98"
+    },
+    "native-restart.json": {
+      "bytes": 3948,
+      "sha256": "e122f5e2c4333a2e7140ac4a82e79474dad3b5559cd3ec0e536504b06ae2340e"
+    },
+    "native-untrusted-after.json": {
+      "bytes": 898,
+      "sha256": "1746f3df5496eed0827533c9e67b815b07e9d808c2f698cac61ef3fa6c660888"
+    },
+    "native-untrusted-before.json": {
+      "bytes": 899,
+      "sha256": "29dd091b43079148a8771d8c0a7c4a214ba7af213aa1cab954dfc1daee17310e"
+    },
+    "summary.json": {
+      "bytes": 1343,
+      "sha256": "dfc1b4f33bf03a8adb4c9aa27549552b9132172558253e3af8f7932a5eb637ed"
+    }
+  }
+}

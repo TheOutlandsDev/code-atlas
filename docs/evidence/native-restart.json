@@ -1,0 +1,174 @@
+{
+  "status": "PASS",
+  "platform": "linux",
+  "vscodeVersion": "1.143.0",
+  "phase": "restart",
+  "extension": "TheOutlandsDev.code-atlas",
+  "syntheticOnly": true,
+  "checks": [
+    {
+      "name": "Real Linux extension host",
+      "result": "PASS"
+    },
+    {
+      "name": "Expected VS Code build",
+      "result": "PASS"
+    },
+    {
+      "name": "Workspace trust enabled",
+      "result": "PASS"
+    },
+    {
+      "name": "Exact isolated workspace opened",
+      "result": "PASS"
+    },
+    {
+      "name": "Only explicitly provisioned fixture workspace is trusted",
+      "result": "PASS"
+    },
+    {
+      "name": "Published extension registered",
+      "result": "PASS"
+    },
+    {
+      "name": "Published extension version",
+      "result": "PASS"
+    },
+    {
+      "name": "Installed VSIX rather than source development build",
+      "result": "PASS"
+    },
+    {
+      "name": "Actual extension activated",
+      "result": "PASS"
+    },
+    {
+      "name": "Isolated editor setting persisted across restart",
+      "result": "PASS"
+    },
+    {
+      "name": "Catalog identity persisted across restart",
+      "result": "PASS"
+    },
+    {
+      "name": "Actual scanner completed",
+      "result": "PASS"
+    },
+    {
+      "name": "Only the explicit fixture base and three generated projects cataloged",
+      "result": "PASS"
+    },
+    {
+      "name": "Python fixture discovered",
+      "result": "PASS"
+    },
+    {
+      "name": "Rust fixture discovered",
+      "result": "PASS"
+    },
+    {
+      "name": "TypeScript fixture discovered",
+      "result": "PASS"
+    },
+    {
+      "name": "No test workspaces configured",
+      "result": "PASS"
+    },
+    {
+      "name": "Native webview panel created",
+      "result": "PASS"
+    },
+    {
+      "name": "Native source selection command",
+      "result": "PASS"
+    },
+    {
+      "name": "Native file-open command",
+      "result": "PASS"
+    },
+    {
+      "name": "Native document uses read-only scheme",
+      "result": "PASS"
+    },
+    {
+      "name": "Native document contains fixture bytes",
+      "result": "PASS"
+    },
+    {
+      "name": "File-system registration is read-only",
+      "result": "PASS"
+    },
+    {
+      "name": "Native stat advertises read-only",
+      "result": "PASS"
+    },
+    {
+      "name": "Native file-system write denied",
+      "result": "PASS"
+    },
+    {
+      "name": "Write attempt preserved fixture",
+      "result": "PASS"
+    },
+    {
+      "name": "Native file-system delete denied",
+      "result": "PASS"
+    },
+    {
+      "name": "Native file-system rename denied",
+      "result": "PASS"
+    },
+    {
+      "name": "Traversal request denied",
+      "result": "PASS"
+    },
+    {
+      "name": "Open-file watcher reported renamed path missing",
+      "result": "PASS"
+    },
+    {
+      "name": "Moved-from URI denied by native file API",
+      "result": "PASS"
+    },
+    {
+      "name": "Moved-to file opens through native command",
+      "result": "PASS"
+    },
+    {
+      "name": "Scanner refreshed after source-root move",
+      "result": "PASS"
+    },
+    {
+      "name": "Moved source root cataloged with new identity",
+      "result": "PASS"
+    },
+    {
+      "name": "Stale project URI denied",
+      "result": "PASS"
+    },
+    {
+      "name": "Moved source root opens read-only",
+      "result": "PASS"
+    },
+    {
+      "name": "Deleted fixture denied by native file API",
+      "result": "PASS"
+    },
+    {
+      "name": "Fixture scan restored",
+      "result": "PASS"
+    },
+    {
+      "name": "Disposable fixture bytes restored after controlled mutations",
+      "result": "PASS"
+    }
+  ],
+  "manualWebviewAcceptance": "NOT_RUN_BY_NATIVE_API_TEST",
+  "scope": "Native VS Code APIs, published VSIX and disposable fixtures only. Not a private-project or production check.",
+  "projectIds": [
+    "p-34b0c44115cd65d9",
+    "p-57338ac4c4b1993e",
+    "p-aa5e3b93ef5d1a7a",
+    "p-af8791acca50bb96"
+  ]
+}

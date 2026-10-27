@@ -1,5 +1,7 @@
 # Automated release checks
 
+The separate [native published-extension workflow](https://github.com/TheOutlandsDev/code-atlas/blob/main/docs/native-acceptance.md) now installs the real VSIX in Linux VS Code 1.143.0 and checks scanning, read-only file boundaries, restart persistence and Restricted Mode. The checks below remain the release-artifact and scanner layers.
+
 The revision 2 setup guide and public release artifacts are pinned in `release/setup-r2.json`. This lock records public filenames, sizes, SHA-256 digests, exact ZIP payloads and source provenance. It contains no real source roots or local inventory.
 
 ## Offline checks

@@ -8,6 +8,14 @@ This first portable release targets **Linux**, **VS Code 1.100 or newer**, and *
 
 ## See the map
 
+[![Native published VSIX acceptance](https://github.com/TheOutlandsDev/code-atlas/actions/workflows/native-acceptance.yml/badge.svg?branch=main)](https://github.com/TheOutlandsDev/code-atlas/actions/workflows/native-acceptance.yml)
+
+**The published extension now has reproducible native Linux checks.** VS Code 1.143.0 passed 38 first-launch, 39 restart and 12 Restricted Mode control assertions using generated source files. [Inspect the results and reproduce the check](https://github.com/TheOutlandsDev/code-atlas/blob/main/docs/native-acceptance.md).
+
+![Actual Code Atlas 0.1.0 running in Linux VS Code with generated Python, Rust and TypeScript projects](https://raw.githubusercontent.com/TheOutlandsDev/code-atlas/main/docs/evidence/native-linux-map.png)
+
+*Actual installed release on a CI virtual display. The real scanner indexed three generated projects plus their selected parent. Native API checks and rendered captures passed; manual desktop search, filters and keyboard acceptance remain pending.*
+
 **[Live demo — explore Code Atlas in your browser](https://connor-oshea-outlands.thatrobotguy.chatgpt.site/demos/code-atlas/)**
 
 No installation is needed. Filter languages, search six fictional projects,
@@ -16,9 +24,6 @@ public webview with an authored catalog; it does not run VS Code, scan folders,
 read source files or execute project tests. Use the setup guide below for the
 actual Linux/VS Code extension.
 
-![Code Atlas webview showing fictional Rust projects and the selected Demo State Engine](https://raw.githubusercontent.com/TheOutlandsDev/TheOutlandsDev/main/assets/code-atlas-demo.png)
-
-*The shipped webview rendered in a browser with an authored fictional catalog. Demonstrates the map, filters and project selection; it is not proof of VS Code integration, source scanning or project tests. [Screenshot provenance](https://github.com/TheOutlandsDev/TheOutlandsDev/blob/main/assets/SHOWCASE.md).*
 
 ## Requirements, first try and status
 
@@ -110,11 +115,14 @@ python3 -I -B tools/package.py
 
 The check command runs the Python, extension-core, and map DOM suites, plus offline release/documentation checks and a temporary synthetic setup/scan workflow. That workflow exercises the real setup helper and scanner with Python, Rust and TypeScript fixtures, checks refresh after a Go project is created and deleted, and verifies original sample files stay unchanged. It runs no project code or project tests.
 
+The [native acceptance workflow](https://github.com/TheOutlandsDev/code-atlas/blob/main/docs/native-acceptance.md) separately installs the pinned published VSIX, starts the exact Linux editor, verifies real API behavior and restart persistence, and captures the rendered window. It keeps manual desktop controls separate.
+
 The [release checks](docs/release-checks.md) also verify the pinned public ZIP and checksums in GitHub Actions, then repeat the setup/scan workflow using the helper from that ZIP and scanner from the released VSIX. They do not start VS Code or inspect private roots. A passing suite is not a claim that arbitrary projects build, that every filesystem race is prevented, or that an installed VS Code window has completed a manual acceptance check.
 
 Packaging is offline and uses an explicit runtime allowlist. It refuses to overwrite an existing VSIX; preserve an earlier artifact or use a clean checkout before packaging again. Building a VSIX does not publish it to the VS Code Marketplace. A development build from a changed checkout can have different bytes from the pinned published installer; release checks validate the published artifact separately.
 
 - [Current revision 2 setup](docs/setup-r2.md)
+- [Native Linux acceptance and screenshots](https://github.com/TheOutlandsDev/code-atlas/blob/main/docs/native-acceptance.md)
 - [Automated release checks](docs/release-checks.md)
 - [Configuration and limits](docs/configuration.md)
 - [Architecture and data flow](docs/architecture.md)

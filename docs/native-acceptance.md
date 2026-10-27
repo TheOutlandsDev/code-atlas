@@ -2,6 +2,24 @@
 
 The **Native published VSIX acceptance** workflow installs the released Code Atlas 0.1.0 VSIX into an isolated Linux VS Code 1.143.0 window. A test-only development helper calls the real editor APIs; Code Atlas itself is loaded from the installed release, not from the source checkout.
 
+## Recorded result
+
+[The recorded native run passed](https://github.com/TheOutlandsDev/code-atlas/actions/runs/40439309883) on GitHub-hosted Ubuntu 22.04 x64 with VS Code 1.143.0 and the unchanged released VSIX. It passed **38 first-launch assertions, 39 restart assertions and 12 Restricted Mode control assertions**. The [frozen reports and hashes](evidence/PROVENANCE.json) identify the exact test commit and captures.
+
+![Actual installed Code Atlas showing the catalog and language map in Linux VS Code](evidence/native-linux-map.png)
+
+*Actual native CI capture, with three generated projects and their selected parent: four roots, six languages, seven indexed files. No private project was scanned. The screenshot is unchanged; its temporary paths belong only to the fictional CI fixture.*
+
+### A short walkthrough
+
+1. **Select explicit folders.** The published setup helper creates a new policy for the generated source parent. The installed extension scans Python, Rust and TypeScript fixtures without executing their code.
+2. **Open the map and browse source.** Native commands create the actual webview, select the Python root and open `main.py` through the read-only filesystem. Write, delete, rename and traversal attempts are refused.
+3. **Close and reopen.** The second editor process retains the isolated setting and catalog identities and repeats the checks. Controlled file/root moves invalidate stale URIs; fixture contents are restored to their original SHA-256 hashes.
+
+![Actual locked main.py source tab opened through Code Atlas in Linux VS Code](evidence/native-linux-source.png)
+
+*API-driven native source navigation. The lock icon and generated function are visible in the real editor. This does not establish manual search, filter or keyboard acceptance.*
+
 ## Reproduce the check
 
 Use Linux x64 with an X display, Python 3.12 for this test driver, `/usr/bin/python3` 3.10+ for the released scanner, and the virtual-display libraries listed in [the workflow](../.github/workflows/native-acceptance.yml). From a clean checkout:

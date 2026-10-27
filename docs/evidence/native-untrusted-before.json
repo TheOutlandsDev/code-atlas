@@ -1,0 +1,36 @@
+{
+  "status": "PASS",
+  "platform": "linux",
+  "vscodeVersion": "1.143.0",
+  "phase": "untrusted-before",
+  "extension": "TheOutlandsDev.code-atlas",
+  "syntheticOnly": true,
+  "checks": [
+    {
+      "name": "Real Linux extension host",
+      "result": "PASS"
+    },
+    {
+      "name": "Expected VS Code build",
+      "result": "PASS"
+    },
+    {
+      "name": "Workspace trust enabled",
+      "result": "PASS"
+    },
+    {
+      "name": "Exact isolated workspace opened",
+      "result": "PASS"
+    },
+    {
+      "name": "Generated control workspace remains untrusted",
+      "result": "PASS"
+    },
+    {
+      "name": "Published extension stays inactive in Restricted Mode",
+      "result": "PASS"
+    }
+  ],
+  "manualWebviewAcceptance": "NOT_RUN_BY_NATIVE_API_TEST",
+  "scope": "Native VS Code APIs, published VSIX and disposable fixtures only. Not a private-project or production check."
+}
