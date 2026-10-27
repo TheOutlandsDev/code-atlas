@@ -250,7 +250,6 @@ def main():
             env['ATLAS_ACCEPTANCE_PHASE'] = launch
             checked('native-' + launch, [str(code), *flags, '--sync', 'off', '--new-window', '--wait',
                     '--extensionDevelopmentPath=' + str(ROOT / 'tests/native/harness'),
-                    '--extensionTestsPath=' + str(ROOT / 'tests/native/harness/native-check.cjs'),
                     str(workspace)], 180)
             result = json.loads((session / ('native-' + launch + '.json')).read_text())
             report['last_native_result'] = {'launch': launch, 'status': result.get('status'),
