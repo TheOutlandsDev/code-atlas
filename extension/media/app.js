@@ -114,6 +114,7 @@
     $('project-total').textContent = number(state.projects.length);
     $('language-total').textContent = number(languages.length);
     $('file-total').textContent = number(coverage.codeFiles ?? state.projects.reduce((sum, project) => sum + count(project.fileCount), 0));
+    $('line-total').textContent = coverage.programLines === null || coverage.programLines === undefined ? '—' : number(coverage.programLines) + (coverage.programLinesComplete === true ? '' : '+');
     $('covered-count').textContent = number(state.projects.filter(project => project.status === 'READ_ONLY_SOURCE' && project.scanComplete === true).length);
     $('limited-count').textContent = number(state.projects.filter(limited).length);
     $('excluded-count').textContent = number(coverage.excludedDirectories);
@@ -121,7 +122,9 @@
     const pending = count(catalog.validation?.pending);
     $('coverage-note').textContent = (coverage.complete === true ? 'Configured roots covered within policy. ' : 'Configured-root coverage is partial. ') +
       (coverage.scanBudgetExceeded ? 'Scan budget reached. ' : '') + (count(coverage.unreadableDirectories) ? number(coverage.unreadableDirectories) + ' unreadable directories. ' : '') +
-      (pending ? number(pending) + ' syntax checks pending. ' : '') + 'Excluded counts refer to files and directories.';
+      (pending ? number(pending) + ' syntax checks pending. ' : '') +
+      (coverage.programLines !== null && coverage.programLines !== undefined && coverage.programLinesComplete !== true ? 'Source line count is partial (' + number(coverage.programLinePendingFiles) + ' files pending). ' : '') +
+      'Excluded counts refer to files and directories.';
     $('coverage-bases').replaceChildren();
     (Array.isArray(coverage.bases) ? coverage.bases : []).filter(isRecord).forEach(base => {
       const row = element('div', 'coverage-base');
@@ -248,6 +251,7 @@
     container.append(chips);
     const browse = element('button', 'button primary-action', 'Browse source files ↗'); browse.type = 'button'; browse.disabled = project.status !== 'READ_ONLY_SOURCE'; browse.addEventListener('click', () => send('openProject', project)); container.append(browse);
     const facts = element('dl', 'facts'); fact(facts, 'Indexed source files', number(project.fileCount)); fact(facts, 'Coverage', project.scanComplete === true ? 'Complete within policy' : 'Limited / incomplete');
+    if (project.programLines !== null && project.programLines !== undefined) fact(facts, 'Physical source lines', number(project.programLines) + (project.programLinesComplete === true ? '' : '+ (partial)'));
     fact(facts, 'Primary language', project.primaryLanguage); fact(facts, 'Activity', 'Not assessed'); container.append(facts);
     container.append(element('h3', 'section-label', 'Static syntax metadata'));
     const validation = project.validation;
