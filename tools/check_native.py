@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run the published VSIX in an isolated Linux VS Code 1.143.0 test host.
+"""Run a published or explicit candidate VSIX in isolated Linux VS Code 1.143.0.
 
 Only generated projects are scanned. The downloaded VSIX/runtime stays unchanged.
 Native API checks, rendered captures and manual UI acceptance are distinct.
@@ -120,11 +120,16 @@ def provision_fixture_trust(state, workspace):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--ide-archive', type=Path, help='Use the same hash-pinned official archive already downloaded')
+    parser.add_argument('--local-code', type=Path, help='Use an installed VS Code 1.143.0 CLI for a local candidate check')
+    parser.add_argument('--assets-dir', type=Path, help='Use already downloaded, checksum-verified v0.1.0 setup assets')
+    parser.add_argument('--candidate-vsix', type=Path, help='Test the explicit local 0.1.1 VSIX instead of the published 0.1.0 VSIX')
     parser.add_argument('--work-dir', type=Path, help='New absolute external working directory; retained for diagnosis')
     parser.add_argument('--artifacts-dir', type=Path, help='New absolute directory for sanitized public test evidence')
     parser.add_argument('--ci-window-manager', action='store_true', help='Start an owned Openbox only on a GitHub CI virtual display')
     parser.add_argument('--verify-inputs', action='store_true', help='Check public artifacts only; do not install or start VS Code')
     args = parser.parse_args()
+    require(not (args.local_code and args.ide_archive), 'Choose either local VS Code or a pinned IDE archive')
+    require(not args.local_code or args.candidate_vsix, 'Local VS Code is only for an explicit candidate check')
     require(not args.ci_window_manager or (os.environ.get('GITHUB_ACTIONS') == 'true' and os.environ.get('DISPLAY')),
             'The owned window manager is limited to the GitHub CI virtual display')
     require(args.verify_inputs or (sys.platform == 'linux' and Path('/proc/self/fd').is_dir()),
@@ -152,40 +157,58 @@ def main():
     try:
         phase('Verify pinned published release inputs')
         lock = release.check_repository(ROOT)
-        downloads = work / 'downloads'
-        downloads.mkdir()
-        release.download_assets(downloads, lock)
+        downloads = args.assets_dir.resolve() if args.assets_dir else work / 'downloads'
+        if not args.assets_dir:
+            downloads.mkdir()
+            release.download_assets(downloads, lock)
         release.check_assets(downloads, lock)
         ide_lock = json.loads((ROOT / 'tests/native/ide-lock.json').read_text())
         require(ide_lock['version'] == '1.143.0' and ide_lock['platform'] == 'linux-x64' and
                 ide_lock['url'] == 'https://update.code.visualstudio.com/1.143.0/linux-x64/stable',
                 'Unsupported IDE lock identity')
-        archive = ide_archive(work, args.ide_archive, ide_lock)
-        report.update(vscode=ide_lock['version'], ide_sha256=ide_lock['sha256'],
-                      vsix_sha256=lock['assets']['code-atlas-0.1.0.vsix']['sha256'])
+        archive = None if args.local_code else ide_archive(work, args.ide_archive, ide_lock)
+        candidate = args.candidate_vsix.resolve() if args.candidate_vsix else None
+        if candidate:
+            require(candidate == (ROOT / 'dist/code-atlas-0.1.1.vsix').resolve() and
+                    candidate.is_file() and not candidate.is_symlink(), 'Candidate VSIX must be this checkout build')
+            with zipfile.ZipFile(candidate) as package:
+                manifest = json.loads(package.read('extension/package.json'))
+                require(manifest['version'] == '0.1.1' and
+                        package.read('extension/extension/scanner.js') == (ROOT / 'extension/scanner.js').read_bytes(),
+                        'Candidate package identity or scanner differs from source')
+        version_expected = '0.1.1' if candidate else '0.1.0'
+        report.update(vscode=ide_lock['version'], ide_sha256=None if args.local_code else ide_lock['sha256'],
+                      vsix_sha256=file_sha(candidate) if candidate else lock['assets']['code-atlas-0.1.0.vsix']['sha256'])
         report['phases'].append('PUBLISHED_INPUT_HASHES_VERIFIED')
         if args.verify_inputs:
             report['status'] = 'INPUTS_VERIFIED_NATIVE_NOT_RUN'
             print('Published inputs verified. Native execution was not run.', flush=True)
             return
-        phase('Extract the reviewed official IDE into new private state')
-        ide_root = work / 'ide'
-        ide_root.mkdir()
-        with tarfile.open(archive, 'r:gz') as bundle:
-            members = bundle.getmembers()
-            require(len(members) < 50000 and sum(m.size for m in members) < 4 * 1024**3 and
-                    all(m.name == 'VSCode-linux-x64' or m.name.startswith('VSCode-linux-x64/') for m in members),
-                    'Unexpected IDE archive structure or size')
-            bundle.extractall(ide_root, filter='data')
-        code = ide_root / 'VSCode-linux-x64/bin/code'
+        if args.local_code:
+            phase('Use installed VS Code with new private state')
+            code = args.local_code.resolve()
+        else:
+            phase('Extract the reviewed official IDE into new private state')
+            ide_root = work / 'ide'
+            ide_root.mkdir()
+            with tarfile.open(archive, 'r:gz') as bundle:
+                members = bundle.getmembers()
+                require(len(members) < 50000 and sum(m.size for m in members) < 4 * 1024**3 and
+                        all(m.name == 'VSCode-linux-x64' or m.name.startswith('VSCode-linux-x64/') for m in members),
+                        'Unexpected IDE archive structure or size')
+                bundle.extractall(ide_root, filter='data')
+            code = ide_root / 'VSCode-linux-x64/bin/code'
         require(code.is_file(), 'Official Linux CLI is missing')
         payload = work / 'setup'
         payload.mkdir()
         with zipfile.ZipFile(downloads / 'code-atlas-0.1.0-setup-r2.zip') as bundle:
-            for name in ['tools/configure.py', 'examples/policy.example.json', 'code-atlas-0.1.0.vsix']:
+            for name in ['tools/configure.py', 'examples/policy.example.json']:
                 target = payload / name
                 target.parent.mkdir(parents=True, exist_ok=True)
                 target.write_bytes(bundle.read(lock['prefix'] + name))
+            if not candidate:
+                target = payload / 'code-atlas-0.1.0.vsix'
+                target.write_bytes(bundle.read(lock['prefix'] + target.name))
         session = work / 'session'
         session.mkdir()
         fixtures, state = session / 'fixtures', session / 'state'
@@ -241,11 +264,12 @@ def main():
         new_json(session / 'session.json', {'kind': 'code-atlas-native-acceptance-v1',
                  'session': str(session), 'fixtures': str(fixtures), 'state': str(state)})
         new_json(session / 'fixture-baseline.json', baseline)
-        phase('Install the unchanged published VSIX')
-        checked('install', [str(code), *flags, '--install-extension', str(payload / 'code-atlas-0.1.0.vsix')])
+        phase('Install the explicit candidate VSIX' if candidate else 'Install the unchanged published VSIX')
+        checked('install', [str(code), *flags, '--install-extension', str(candidate or payload / 'code-atlas-0.1.0.vsix')])
         listed = checked('extensions', [str(code), *flags, '--list-extensions', '--show-versions'])
-        require('theoutlandsdev.code-atlas@0.1.0' in listed.stdout.lower(), 'Published VSIX not registered')
+        require('theoutlandsdev.code-atlas@' + version_expected in listed.stdout.lower(), 'VSIX not registered')
         env['ATLAS_ACCEPTANCE_SESSION'] = str(session)
+        env['ATLAS_ACCEPTANCE_EXPECTED_VERSION'] = version_expected
         untrusted = session / 'untrusted/Untrusted.code-workspace'
         untrusted.parent.mkdir()
         new_json(untrusted, {'folders': [], 'settings': {'security.workspace.trust.enabled': True}})
