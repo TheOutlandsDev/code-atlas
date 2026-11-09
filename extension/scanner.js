@@ -3,12 +3,13 @@ const childProcess=require('child_process');
 const path=require('path');
 const {ROOT}=require('./policy');
 class Scanner {
-  constructor(onComplete,onStatus,extensionPath,runtime={}){this.spawn=runtime.spawn||childProcess.spawn;this.kill=runtime.kill||process.kill.bind(process);this.extensionPath=extensionPath;this.onComplete=onComplete;this.onStatus=onStatus;this.child=null;this.pending=null;this.disposed=false;this.blocked=false;}
+  constructor(onComplete,onStatus,extensionPath,runtime={}){this.spawn=runtime.spawn||childProcess.spawn;this.kill=runtime.kill||process.kill.bind(process);this.extensionPath=extensionPath;this.onComplete=onComplete;this.onStatus=onStatus;this.child=null;this.pending=null;this.queued=false;this.disposed=false;this.blocked=false;}
   request(){
     if(this.disposed||this.blocked)return Promise.resolve({status:this.blocked?'TERMINATION_UNCONFIRMED':'CANCELLED'});
-    if(this.pending)return this.pending;
-    this.pending=this.once().finally(()=>{this.pending=null;});return this.pending;
+    if(this.pending){this.queued=true;return this.pending;}
+    this.pending=this.loop().finally(()=>{this.pending=null;});return this.pending;
   }
+  async loop(){let result;do{this.queued=false;result=await this.once();}while(this.queued&&!this.disposed&&!this.blocked);return result;}
   stop(child){if(child&&Number.isInteger(child.pid)&&child.pid>1){try{this.kill(-child.pid,'SIGTERM');}catch{}const timer=setTimeout(()=>{if(this.child===child){try{this.kill(-child.pid,'SIGKILL');}catch{}}},1000);timer.unref?.();}}
   once(){return new Promise(resolve=>{
     if(this.disposed)return resolve({status:'CANCELLED'});
@@ -27,6 +28,6 @@ class Scanner {
       deadline=setTimeout(()=>{timedOut=true;this.stop(child);finalDeadline=setTimeout(()=>{void finish(null,false);},2000);finalDeadline.unref?.();},25000);deadline.unref?.();
     }catch{void finish(null);}
   });}
-  dispose(){this.disposed=true;if(this.child)this.stop(this.child);}
+  dispose(){this.disposed=true;this.queued=false;if(this.child)this.stop(this.child);}
 }
 module.exports={Scanner};
