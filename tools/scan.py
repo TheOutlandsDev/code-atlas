@@ -106,6 +106,8 @@ class Scanner:
         self.max_entries = policy.limit('maxDirectoryEntries', 5000)
         self.max_depth = policy.limit('maxDiscoveryDepth', 8)
         self.max_bytes = policy.limit('maxFileBytes', 524288)
+        self.max_line_bytes = policy.limit('maxLineCountBytes', 16777216)
+        self.line_bytes = 0
         self.projects = {}
         self.dirs = self.files = self.denied = self.excluded = self.checked = self.errors = 0
         self.limited = False
@@ -122,7 +124,7 @@ class Scanner:
         if len(self.projects) >= self.max_projects:
             self.limited = True
             return None
-        row = {'id': 'p-' + hashlib.sha256(root.encode()).hexdigest()[:16], 'label': self.p.raw.get('seedLabels', {}).get(root, Path(root).name), 'rootPath': root, 'languages': [], 'primaryLanguage': 'Other', 'fileCount': 0, 'status': 'READ_ONLY_SOURCE', 'scanComplete': True, 'sampleFiles': [], 'sourceFingerprint': '', 'testStatus': 'REVIEWED_ISOLATED_TESTS' if root in self.p.reviewed else 'NOT_CONFIGURED', 'isolatedCopyState': 'NOT_CONFIGURED', 'validation': {'status': 'NOT_CHECKED', 'syntaxPassed': 0, 'syntaxErrors': 0, 'pending': 0, 'unsupported': 0, 'lastCheckedAtUtc': None}, '_languages': Counter(), '_stamps': []}
+        row = {'id': 'p-' + hashlib.sha256(root.encode()).hexdigest()[:16], 'label': self.p.raw.get('seedLabels', {}).get(root, Path(root).name), 'rootPath': root, 'languages': [], 'primaryLanguage': 'Other', 'fileCount': 0, 'programLines': 0, 'programLineFiles': 0, 'programLinePendingFiles': 0, 'programLineBinaryFiles': 0, 'programLinesComplete': False, 'status': 'READ_ONLY_SOURCE', 'scanComplete': True, 'sampleFiles': [], 'sourceFingerprint': '', 'testStatus': 'REVIEWED_ISOLATED_TESTS' if root in self.p.reviewed else 'NOT_CONFIGURED', 'isolatedCopyState': 'NOT_CONFIGURED', 'validation': {'status': 'NOT_CHECKED', 'syntaxPassed': 0, 'syntaxErrors': 0, 'pending': 0, 'unsupported': 0, 'lastCheckedAtUtc': None}, '_languages': Counter(), '_stamps': []}
         self.projects[root] = row
         return row
 
@@ -192,11 +194,26 @@ class Scanner:
             if len(row['sampleFiles']) < 20:
                 row['sampleFiles'].append({'relativePath': rel, 'language': language})
             validation = row['validation']
+            content = None
+            if self.line_bytes + info.st_size <= self.max_line_bytes:
+                try:
+                    content = regular(file, self.max_bytes)
+                    self.line_bytes += len(content)
+                    if b'\0' in content:
+                        row['programLineBinaryFiles'] += 1
+                    else:
+                        row['programLines'] += content.count(b'\n') + int(bool(content) and not content.endswith(b'\n'))
+                        row['programLineFiles'] += 1
+                except (OSError, ValueError):
+                    row['programLinePendingFiles'] += 1
+            else:
+                row['programLinePendingFiles'] += 1
             if language not in ('Python', 'JSON'):
                 validation['unsupported'] += 1
                 continue
             try:
-                content = regular(file, self.max_bytes)
+                if content is None:
+                    content = regular(file, self.max_bytes)
             except (OSError, ValueError):
                 validation['pending'] += 1
                 self.denied += 1
@@ -226,10 +243,11 @@ class Scanner:
             row['primaryLanguage'] = counts.most_common(1)[0][0] if counts else 'Other'
             row['sourceFingerprint'] = hashlib.sha256(json.dumps(row.pop('_stamps'), separators=(',', ':')).encode()).hexdigest()
             row['scanComplete'] = not self.limited and not self.denied and row['status'] == 'READ_ONLY_SOURCE'
+            row['programLinesComplete'] = row['scanComplete'] and row['programLinePendingFiles'] == 0
             validation = row['validation']
             validation['status'] = 'STALE_UNREADABLE' if validation['pending'] else 'SYNTAX_ERROR' if validation['syntaxErrors'] else 'SYNTAX_PASS' if validation['syntaxPassed'] else 'NOT_CHECKED'
             validation['lastCheckedAtUtc'] = generated if validation['syntaxPassed'] + validation['syntaxErrors'] else None
-        return {'schemaVersion': 1, 'generation': int(time.time() * 1000), 'generatedAtUtc': generated, 'projects': list(self.projects.values()), 'coverage': {'bases': bases, 'projectCount': len(self.projects), 'codeFiles': sum(row['fileCount'] for row in self.projects.values()), 'complete': not self.limited and not self.denied, 'limited': self.limited or bool(self.denied), 'unreadableDirectories': self.denied, 'excludedDirectories': self.excluded, 'scanBudgetExceeded': self.limited, 'durationMs': int((time.monotonic() - self.started) * 1000)}, 'validation': {'mode': 'static_only', 'supportedLanguages': ['Python', 'JSON'], 'checkedThisScan': self.checked, 'cacheEntries': 0, 'errors': self.errors, 'pending': sum(row['validation']['pending'] for row in self.projects.values())}}
+        return {'schemaVersion': 1, 'generation': int(time.time() * 1000), 'generatedAtUtc': generated, 'projects': list(self.projects.values()), 'coverage': {'bases': bases, 'projectCount': len(self.projects), 'codeFiles': sum(row['fileCount'] for row in self.projects.values()), 'programLines': sum(row['programLines'] for row in self.projects.values()), 'programLineFiles': sum(row['programLineFiles'] for row in self.projects.values()), 'programLinePendingFiles': sum(row['programLinePendingFiles'] for row in self.projects.values()), 'programLineBinaryFiles': sum(row['programLineBinaryFiles'] for row in self.projects.values()), 'programLinesComplete': not self.limited and not self.denied and all(row['programLinesComplete'] for row in self.projects.values()), 'complete': not self.limited and not self.denied, 'limited': self.limited or bool(self.denied), 'unreadableDirectories': self.denied, 'excludedDirectories': self.excluded, 'scanBudgetExceeded': self.limited, 'durationMs': int((time.monotonic() - self.started) * 1000)}, 'validation': {'mode': 'static_only', 'supportedLanguages': ['Python', 'JSON'], 'checkedThisScan': self.checked, 'cacheEntries': 0, 'errors': self.errors, 'pending': sum(row['validation']['pending'] for row in self.projects.values())}}
 
 
 def scan(home):
