@@ -6,6 +6,10 @@ Code Atlas turns explicitly selected development folders into a language network
 
 This first portable release targets **Linux**, **VS Code 1.100 or newer**, and **Python 3.10 or newer**. It uses the VS Code extension host and Python standard library; it has no runtime npm dependencies and does not need an account or hosted service.
 
+## Version 0.1.1
+
+[The 0.1.1 VSIX](https://github.com/TheOutlandsDev/code-atlas/releases/tag/v0.1.1) queues one follow-up refresh when another refresh is requested during a running scan. The [revision 2 setup bundle](https://github.com/TheOutlandsDev/code-atlas/releases/tag/v0.1.0) remains the pinned first-time configuration path. It contains the 0.1.0 VSIX; install 0.1.1 afterward using the same six separate state-directory options in [the setup guide](docs/setup-r2.md). The existing 0.1.0 files and checksums remain unchanged.
+
 ## See the map
 
 [![Native published VSIX acceptance](https://github.com/TheOutlandsDev/code-atlas/actions/workflows/native-acceptance.yml/badge.svg?branch=main)](https://github.com/TheOutlandsDev/code-atlas/actions/workflows/native-acceptance.yml)
