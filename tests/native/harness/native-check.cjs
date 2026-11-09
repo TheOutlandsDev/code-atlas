@@ -28,7 +28,9 @@ exports.run = async function run() {
   const capture = async name => {
     await pause(1500);
     const file = path.join(session,phase+'-'+name+'.png');
-    const result = spawnSync('import',['-window','root',file],{timeout:15000});
+    const result = fs.existsSync('/usr/bin/import')
+      ? spawnSync('/usr/bin/import',['-window','root',file],{timeout:15000})
+      : spawnSync('/usr/bin/xfce4-screenshooter',['-f','-s',file],{timeout:15000});
     assert.equal(result.status,0,'Native virtual-display capture succeeded');
     assert.ok(fs.readFileSync(file).subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10])));
   };
@@ -55,7 +57,7 @@ exports.run = async function run() {
     }
     check('Only explicitly provisioned fixture workspace is trusted',vscode.workspace.isTrusted===true);
     check('Published extension registered',Boolean(extension));
-    check('Published extension version',extension.packageJSON.version==='0.1.0');
+    check('Expected extension version',extension.packageJSON.version===(process.env.ATLAS_ACCEPTANCE_EXPECTED_VERSION||'0.1.0'));
     check('Installed VSIX rather than source development build',extension.extensionPath.startsWith(path.join(context.state,'vscode-extensions')+path.sep));
     api=await extension.activate();
     check('Actual extension activated',extension.isActive&&api&&typeof api.getCatalog==='function');
