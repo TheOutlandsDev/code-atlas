@@ -57,6 +57,28 @@ class ScanTests(unittest.TestCase):
         self.assertEqual(row['languages'], ['Python', 'Rust'])
         self.assertEqual(row['validation']['syntaxPassed'], 1)
         self.assertEqual(row['validation']['unsupported'], 1)
+        self.assertEqual(row['programLines'], 2)
+        self.assertTrue(row['programLinesComplete'])
+
+    def test_physical_lines_include_unterminated_last_line_without_content(self):
+        self.write('main.py', 'one\r\ntwo\r\nthree')
+        self.write('style.css', '')
+        result = self.result()
+        row = result['projects'][0]
+        self.assertEqual(row['programLines'], 3)
+        self.assertEqual(row['programLineFiles'], 2)
+        self.assertTrue(result['coverage']['programLinesComplete'])
+        self.assertNotIn('three', json.dumps(result))
+
+    def test_line_count_budget_reports_partial_count(self):
+        self.write('first.css', 'one\n')
+        self.write('second.css', 'two\n')
+        self.raw['maxLineCountBytes'] = 4
+        result = self.result()
+        self.assertEqual(result['coverage']['programLines'], 1)
+        self.assertEqual(result['coverage']['programLinePendingFiles'], 1)
+        self.assertFalse(result['coverage']['programLinesComplete'])
+        self.assertTrue(result['coverage']['complete'])
 
     def test_invalid_python_and_json_are_reported_without_diagnostic_content(self):
         self.write('main.py', 'def invalid(\n')
