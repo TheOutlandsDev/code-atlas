@@ -80,7 +80,7 @@ exports.run = async function run() {
     check('Rust fixture discovered',catalog.projects.some(p=>p.languages.includes('Rust')));
     check('TypeScript fixture discovered',catalog.projects.some(p=>p.languages.includes('TypeScript')));
     check('No test workspaces configured',catalog.projects.every(p=>p.testStatus==='NOT_CONFIGURED'));
-    if(process.env.ATLAS_ACCEPTANCE_EXPECTED_VERSION==='0.1.1'){
+    if(process.env.ATLAS_ACCEPTANCE_CANDIDATE==='1'){
       const names=['python-demo/pyproject.toml','python-demo/main.py','python-demo/config.json','rust-demo/Cargo.toml','rust-demo/src/lib.rs','typescript-demo/package.json','typescript-demo/src/index.ts'];
       const physicalLines=bytes=>bytes.length===0?0:bytes.toString('utf8').split('\n').length-(bytes.at(-1)===10?1:0);
       const expected=names.reduce((sum,name)=>sum+physicalLines(fs.readFileSync(path.join(context.fixtures,name))),0);
@@ -89,12 +89,12 @@ exports.run = async function run() {
     }
     const panel=await vscode.commands.executeCommand('codeAtlas.openMap');
     check('Native webview panel created',panel&&panel.webview&&typeof panel.webview.html==='string');
-    if(process.env.ATLAS_ACCEPTANCE_EXPECTED_VERSION==='0.1.1')check('Candidate webview contains the line total',panel.webview.html.includes('id="line-total"'));
+    if(process.env.ATLAS_ACCEPTANCE_CANDIDATE==='1')check('Candidate webview contains the line total',panel.webview.html.includes('id="line-total"'));
     await vscode.commands.executeCommand('workbench.action.closeSidebar');
     await vscode.commands.executeCommand('workbench.action.closeAuxiliaryBar');
     panel.reveal(vscode.ViewColumn.One);
     await capture('map');
-    if(phase==='first'&&process.env.ATLAS_ACCEPTANCE_EXPECTED_VERSION==='0.1.1'){
+    if(phase==='first'&&process.env.ATLAS_ACCEPTANCE_CANDIDATE==='1'){
       const policyFile=path.join(context.state,'policy.json');
       const originalPolicy=fs.readFileSync(policyFile);
       try{
