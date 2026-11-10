@@ -54,6 +54,7 @@ Use the [revision 2 download and checksum steps below](#quick-start--setup-revis
 - Searches project names, languages, and local source paths.
 - Opens allowed source files through a read-only virtual filesystem.
 - Refreshes the local catalog within configured scan budgets and reports limited or unreadable coverage.
+- Counts physical lines in eligible source files with a bounded read budget, marking partial totals clearly. See [line count semantics](docs/line-counts.md). This source checkout feature is not part of the pinned 0.1.1 installer.
 - Opens explicitly configured reviewed workspaces for your existing test and development workflows.
 
 Source navigation does not establish project activity, runtime health, successful tests, or complete system coverage. Code Atlas does not copy, relocate, or deploy your projects.

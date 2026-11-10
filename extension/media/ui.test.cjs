@@ -40,6 +40,14 @@ test('initial catalog renders primary-language network, exact counts, and partia
   assert.match(ui.get('shown-count').textContent, /2 primary language groups/); assert.equal(ui.messages.length, 0);
   assert.match(ui.get('updated').textContent, /open-file refresh 1s/); assert.doesNotMatch(ui.get('updated').textContent, /open-file checks/);
 });
+test('physical line count shows a partial marker when files remain pending', () => {
+  const sample = fixture();
+  Object.assign(sample.coverage, {programLines:12,programLineFiles:3,programLinePendingFiles:1,programLineBinaryFiles:0,programLinesComplete:false});
+  Object.assign(sample.projects[0], {programLines:12,programLineFiles:3,programLinePendingFiles:1,programLineBinaryFiles:0,programLinesComplete:false});
+  const ui = boot(sample);
+  assert.equal(ui.get('line-total').textContent, '12+');
+  assert.match(ui.get('coverage-note').textContent, /1 files pending/);
+});
 test('untrusted labels remain text nodes; dynamic markup APIs and execution APIs are absent', () => {
   const ui = boot(); assert.match(ui.get('projects').textContent, /<img src=x onerror=alert\(1\)>/);
   assert.equal(descendants(ui.get('projects')).some(node => node.tagName === 'img'), false);
