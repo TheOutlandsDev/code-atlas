@@ -270,6 +270,7 @@ def main():
         require('theoutlandsdev.code-atlas@' + version_expected in listed.stdout.lower(), 'VSIX not registered')
         env['ATLAS_ACCEPTANCE_SESSION'] = str(session)
         env['ATLAS_ACCEPTANCE_EXPECTED_VERSION'] = version_expected
+        env['ATLAS_ACCEPTANCE_CAPTURE'] = 'ci-virtual-display' if args.ci_window_manager else 'off'
         untrusted = session / 'untrusted/Untrusted.code-workspace'
         untrusted.parent.mkdir()
         new_json(untrusted, {'folders': [], 'settings': {'security.workspace.trust.enabled': True}})
@@ -297,7 +298,8 @@ def main():
             report['native_executed'] = True
         report.update(status='PASS', fixture_bytes_restored=True, setup_configuration_preserved=True,
                       isolated_setting_and_catalog_persisted=True, unrelated_workspace_remained_untrusted=True,
-                      capture_scope='Actual IDE on a private CI virtual display; manual UI input remains separate')
+                      capture_scope='Actual IDE on a private CI virtual display' if args.ci_window_manager
+                      else 'NO_CAPTURE_LOCAL_NATIVE_API_ONLY')
         print('Native API acceptance passed on first launch and restart. Manual UI input remains separate.', flush=True)
     except Exception as error:
         report.update(status='FAIL', error_type=type(error).__name__)
@@ -313,7 +315,7 @@ def main():
         session = work / 'session'
         if session.exists():
             for name in ['native-untrusted-before.json', 'native-untrusted-after.json',
-                         'native-first.json', 'native-restart.json', 'first-map.png', 'first-readonly-source.png',
+                         'native-first.json', 'native-restart.json', 'first-map.png', 'first-partial-map.png', 'first-readonly-source.png',
                          'restart-map.png', 'restart-readonly-source.png']:
                 source = session / name
                 if source.is_file():
