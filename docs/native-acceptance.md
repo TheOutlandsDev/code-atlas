@@ -6,6 +6,8 @@ The **Native published VSIX acceptance** workflow installs the released Code Atl
 
 [The recorded native run passed](https://github.com/TheOutlandsDev/code-atlas/actions/runs/40439309883) on GitHub-hosted Ubuntu 22.04 x64 with VS Code 1.143.0 and the unchanged released VSIX. It passed **38 first-launch assertions, 39 restart assertions and 12 Restricted Mode control assertions**. The [frozen reports and hashes](evidence/PROVENANCE.json) identify the exact test commit and captures.
 
+The separate [candidate native workflow](../.github/workflows/candidate-native.yml) builds the current pull request's VSIX and exercises it with generated files. It checks complete and budget-limited physical line counts, restart behavior, and Restricted Mode. The candidate job passed on [PR #4](https://github.com/TheOutlandsDev/code-atlas/pull/4). CI captures only its disposable virtual display; local native runs keep capture off by default. A candidate check does not verify the bytes of a later published release asset.
+
 ![Actual installed Code Atlas showing the catalog and language map in Linux VS Code](evidence/native-linux-map.png)
 
 *Actual native CI capture, with three generated projects and their selected parent: four roots, six languages, seven indexed files. No private project was scanned. The screenshot is unchanged; its temporary paths belong only to the fictional CI fixture.*
