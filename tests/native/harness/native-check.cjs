@@ -20,12 +20,13 @@ exports.run = async function run() {
   assert.ok(['untrusted-before','first','restart','untrusted-after'].includes(phase));
   const report = {status:'RUNNING',platform:process.platform,vscodeVersion:vscode.version,phase,
     extension:'TheOutlandsDev.code-atlas',syntheticOnly:true,checks:[],manualWebviewAcceptance:'NOT_RUN_BY_NATIVE_API_TEST',
-    scope:'Native VS Code APIs, published VSIX and disposable fixtures only. Not a private-project or production check.'};
+    scope:'Native VS Code APIs, installed VSIX and disposable fixtures only. Not a private-project or production check.'};
   const output = path.join(session,'native-'+phase+'.json');
   const save = () => fs.writeFileSync(output,JSON.stringify(report,null,2)+'\n',{mode:0o600});
   const check = (name, value) => { if(!value)report.failedCheck=name; assert.ok(value,name);report.checks.push({name,result:'PASS'});save(); };
   const pause = ms => new Promise(resolve=>setTimeout(resolve,ms));
   const capture = async name => {
+    if(process.env.ATLAS_ACCEPTANCE_CAPTURE!=='ci-virtual-display')return;
     await pause(1500);
     const file = path.join(session,phase+'-'+name+'.png');
     const result = fs.existsSync('/usr/bin/import')
@@ -79,12 +80,36 @@ exports.run = async function run() {
     check('Rust fixture discovered',catalog.projects.some(p=>p.languages.includes('Rust')));
     check('TypeScript fixture discovered',catalog.projects.some(p=>p.languages.includes('TypeScript')));
     check('No test workspaces configured',catalog.projects.every(p=>p.testStatus==='NOT_CONFIGURED'));
+    if(process.env.ATLAS_ACCEPTANCE_EXPECTED_VERSION==='0.1.1'){
+      const names=['python-demo/pyproject.toml','python-demo/main.py','python-demo/config.json','rust-demo/Cargo.toml','rust-demo/src/lib.rs','typescript-demo/package.json','typescript-demo/src/index.ts'];
+      const physicalLines=bytes=>bytes.length===0?0:bytes.toString('utf8').split('\n').length-(bytes.at(-1)===10?1:0);
+      const expected=names.reduce((sum,name)=>sum+physicalLines(fs.readFileSync(path.join(context.fixtures,name))),0);
+      check('Candidate counts every generated physical source line',catalog.coverage.programLines===expected&&catalog.coverage.programLineFiles===names.length&&catalog.coverage.programLinePendingFiles===0&&catalog.coverage.programLinesComplete===true);
+      check('Candidate project totals match coverage',catalog.projects.reduce((sum,p)=>sum+p.programLines,0)===expected&&catalog.projects.every(p=>p.programLinesComplete===true));
+    }
     const panel=await vscode.commands.executeCommand('codeAtlas.openMap');
     check('Native webview panel created',panel&&panel.webview&&typeof panel.webview.html==='string');
+    if(process.env.ATLAS_ACCEPTANCE_EXPECTED_VERSION==='0.1.1')check('Candidate webview contains the line total',panel.webview.html.includes('id="line-total"'));
     await vscode.commands.executeCommand('workbench.action.closeSidebar');
     await vscode.commands.executeCommand('workbench.action.closeAuxiliaryBar');
     panel.reveal(vscode.ViewColumn.One);
     await capture('map');
+    if(phase==='first'&&process.env.ATLAS_ACCEPTANCE_EXPECTED_VERSION==='0.1.1'){
+      const policyFile=path.join(context.state,'policy.json');
+      const originalPolicy=fs.readFileSync(policyFile);
+      try{
+        const limited=JSON.parse(originalPolicy);
+        limited.maxLineCountBytes=fs.statSync(path.join(root,'config.json')).size;
+        fs.writeFileSync(policyFile,JSON.stringify(limited)+'\n',{mode:0o600});
+        const partial=await vscode.commands.executeCommand('codeAtlas.refresh');
+        check('Candidate budgeted scanner completed',partial&&partial.status==='PASS');
+        const partialCatalog=api.getCatalog();
+        check('Candidate reports a partial physical line count',partialCatalog.coverage.programLines>0&&partialCatalog.coverage.programLinePendingFiles>0&&partialCatalog.coverage.programLinesComplete===false);
+        await capture('partial-map');
+      }finally{fs.writeFileSync(policyFile,originalPolicy,{mode:0o600});}
+      const restored=await vscode.commands.executeCommand('codeAtlas.refresh');
+      check('Candidate full count restored after budget test',restored&&restored.status==='PASS'&&api.getCatalog().coverage.programLinesComplete===true);
+    }
     check('Native source selection command',await vscode.commands.executeCommand('codeAtlas.openProject',python.id,'Python')===true);
     check('Native file-open command',await vscode.commands.executeCommand('codeAtlas.openFile',python.id,'main.py')===true);
     const uri=api.provider.uri(python.id,'main.py');
