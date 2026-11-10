@@ -1,0 +1,37 @@
+name: Native candidate VSIX acceptance
+on:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  candidate:
+    name: Linux / VS Code 1.143.0 / candidate VSIX
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: '3.12'
+      - name: Install virtual-display capture prerequisites
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends xvfb openbox imagemagick libnss3 libgbm1 libxkbfile1 libsecret-1-0 libgtk-3-0 libasound2
+      - name: Build candidate from reviewed source
+        run: python3 -I -B tools/package.py
+      - name: Exercise candidate in an isolated native IDE
+        run: >-
+          xvfb-run -a -s "-screen 0 1920x1440x24"
+          python3 -I -B tools/check_native.py --ci-window-manager
+          --candidate-vsix dist/code-atlas-0.1.1.vsix
+          --artifacts-dir "$RUNNER_TEMP/code-atlas-candidate-artifacts"
+      - name: Retain synthetic candidate reports and captures
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: code-atlas-candidate-linux
+          path: ${{ runner.temp }}/code-atlas-candidate-artifacts/
+          if-no-files-found: error
+          retention-days: 14
