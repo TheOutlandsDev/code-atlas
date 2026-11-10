@@ -122,7 +122,7 @@ def main():
     parser.add_argument('--ide-archive', type=Path, help='Use the same hash-pinned official archive already downloaded')
     parser.add_argument('--local-code', type=Path, help='Use an installed VS Code 1.143.0 CLI for a local candidate check')
     parser.add_argument('--assets-dir', type=Path, help='Use already downloaded, checksum-verified v0.1.0 setup assets')
-    parser.add_argument('--candidate-vsix', type=Path, help='Test the explicit local 0.1.1 VSIX instead of the published 0.1.0 VSIX')
+    parser.add_argument('--candidate-vsix', type=Path, help='Test this checkout\'s explicit VSIX instead of the published 0.1.0 VSIX')
     parser.add_argument('--work-dir', type=Path, help='New absolute external working directory; retained for diagnosis')
     parser.add_argument('--artifacts-dir', type=Path, help='New absolute directory for sanitized public test evidence')
     parser.add_argument('--ci-window-manager', action='store_true', help='Start an owned Openbox only on a GitHub CI virtual display')
@@ -168,15 +168,19 @@ def main():
                 'Unsupported IDE lock identity')
         archive = None if args.local_code else ide_archive(work, args.ide_archive, ide_lock)
         candidate = args.candidate_vsix.resolve() if args.candidate_vsix else None
+        package_manifest = json.loads((ROOT / 'package.json').read_text())
+        require(package_manifest.get('name') == 'code-atlas' and
+                re.fullmatch(r'0\.1\.[1-9][0-9]*', package_manifest.get('version', '')),
+                'Unsupported candidate package identity')
         if candidate:
-            require(candidate == (ROOT / 'dist/code-atlas-0.1.1.vsix').resolve() and
+            require(candidate == (ROOT / 'dist' / ('code-atlas-' + package_manifest['version'] + '.vsix')).resolve() and
                     candidate.is_file() and not candidate.is_symlink(), 'Candidate VSIX must be this checkout build')
             with zipfile.ZipFile(candidate) as package:
                 manifest = json.loads(package.read('extension/package.json'))
-                require(manifest['version'] == '0.1.1' and
+                require(manifest['version'] == package_manifest['version'] and
                         package.read('extension/extension/scanner.js') == (ROOT / 'extension/scanner.js').read_bytes(),
                         'Candidate package identity or scanner differs from source')
-        version_expected = '0.1.1' if candidate else '0.1.0'
+        version_expected = package_manifest['version'] if candidate else '0.1.0'
         report.update(vscode=ide_lock['version'], ide_sha256=None if args.local_code else ide_lock['sha256'],
                       vsix_sha256=file_sha(candidate) if candidate else lock['assets']['code-atlas-0.1.0.vsix']['sha256'])
         report['phases'].append('PUBLISHED_INPUT_HASHES_VERIFIED')
@@ -270,6 +274,7 @@ def main():
         require('theoutlandsdev.code-atlas@' + version_expected in listed.stdout.lower(), 'VSIX not registered')
         env['ATLAS_ACCEPTANCE_SESSION'] = str(session)
         env['ATLAS_ACCEPTANCE_EXPECTED_VERSION'] = version_expected
+        env['ATLAS_ACCEPTANCE_CANDIDATE'] = '1' if candidate else '0'
         env['ATLAS_ACCEPTANCE_CAPTURE'] = 'ci-virtual-display' if args.ci_window_manager else 'off'
         untrusted = session / 'untrusted/Untrusted.code-workspace'
         untrusted.parent.mkdir()
