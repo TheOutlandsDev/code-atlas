@@ -6,9 +6,9 @@ Code Atlas turns explicitly selected development folders into a language network
 
 This first portable release targets **Linux**, **VS Code 1.100 or newer**, and **Python 3.10 or newer**. It uses the VS Code extension host and Python standard library; it has no runtime npm dependencies and does not need an account or hosted service.
 
-## Version 0.1.1
+## Version 0.1.2
 
-[The 0.1.1 VSIX](https://github.com/TheOutlandsDev/code-atlas/releases/tag/v0.1.1) queues one follow-up refresh when another refresh is requested during a running scan. The [revision 2 setup bundle](https://github.com/TheOutlandsDev/code-atlas/releases/tag/v0.1.0) remains the pinned first-time configuration path. It contains the 0.1.0 VSIX; install 0.1.1 afterward using the same six separate state-directory options in [the setup guide](docs/setup-r2.md). The existing 0.1.0 files and checksums remain unchanged.
+[The 0.1.2 VSIX](https://github.com/TheOutlandsDev/code-atlas/releases/tag/v0.1.2) adds bounded physical source line counts to the map and project details, with a clear partial marker when the read budget is exhausted. It also includes the 0.1.1 queued-refresh fix. Verify the VSIX with `SHA256SUMS-0.1.2`. The [revision 2 setup bundle](https://github.com/TheOutlandsDev/code-atlas/releases/tag/v0.1.0) remains the pinned first-time configuration path. It contains the 0.1.0 VSIX; install 0.1.2 afterward using the same six separate state-directory options in [the setup guide](docs/setup-r2.md). The existing 0.1.0 and 0.1.1 release assets remain unchanged.
 
 ## See the map
 
@@ -54,7 +54,7 @@ Use the [revision 2 download and checksum steps below](#quick-start--setup-revis
 - Searches project names, languages, and local source paths.
 - Opens allowed source files through a read-only virtual filesystem.
 - Refreshes the local catalog within configured scan budgets and reports limited or unreadable coverage.
-- Counts physical lines in eligible source files with a bounded read budget, marking partial totals clearly. See [line count semantics](docs/line-counts.md). This source checkout feature is not part of the pinned 0.1.1 installer.
+- Counts physical lines in eligible source files with a bounded read budget, marking partial totals clearly. See [line count semantics](docs/line-counts.md).
 - Opens explicitly configured reviewed workspaces for your existing test and development workflows.
 
 Source navigation does not establish project activity, runtime health, successful tests, or complete system coverage. Code Atlas does not copy, relocate, or deploy your projects.
