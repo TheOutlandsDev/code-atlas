@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.2
+
+- Show bounded physical source line counts in the map and project details. Mark totals as partial when the read budget leaves files pending.
+- Include the line-count guide in the VSIX. Keep the pinned revision 2 first-time setup bundle and earlier release assets unchanged.
+- Check each pull request's candidate VSIX in an isolated Linux VS Code profile with generated fixtures, including complete and partial counts, restart persistence and Restricted Mode. Local native runs keep screenshots off by default.
+
 ## 0.1.1
 
 - Queue one follow-up refresh when a request arrives during an active scan, so the map sees changes made while that scan was running.

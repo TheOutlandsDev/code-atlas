@@ -25,7 +25,7 @@ jobs:
         run: >-
           xvfb-run -a -s "-screen 0 1920x1440x24"
           python3 -I -B tools/check_native.py --ci-window-manager
-          --candidate-vsix dist/code-atlas-0.1.1.vsix
+          --candidate-vsix dist/code-atlas-0.1.2.vsix
           --artifacts-dir "$RUNNER_TEMP/code-atlas-candidate-artifacts"
       - name: Retain synthetic candidate reports and captures
         if: ${{ !cancelled() }}
