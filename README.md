@@ -6,7 +6,11 @@ Code Atlas turns explicitly selected development folders into a language network
 
 This first portable release targets **Linux**, **VS Code 1.100 or newer**, and **Python 3.10 or newer**. It uses the VS Code extension host and Python standard library; it has no runtime npm dependencies and does not need an account or hosted service.
 
-## Version 0.1.2
+## Source candidate 0.1.3
+
+The current source candidate binds line counts and static checks to the file identity observed during discovery, rechecks paths after reading, and leaves changed files pending for a fresh scan. See [line-count and freshness semantics](docs/line-counts.md). The portable scanner starts a new bounded walk on each refresh; it does not inherit deployment-specific cache revalidation or runtime inventory features. Source availability and passing synthetic tests do not establish a published installer or native acceptance for this candidate.
+
+## Published version 0.1.2
 
 [The 0.1.2 VSIX](https://github.com/TheOutlandsDev/code-atlas/releases/tag/v0.1.2) adds bounded physical source line counts to the map and project details, with a clear partial marker when the read budget is exhausted. It also includes the 0.1.1 queued-refresh fix. Verify the VSIX with `SHA256SUMS-0.1.2`. The [revision 2 setup bundle](https://github.com/TheOutlandsDev/code-atlas/releases/tag/v0.1.0) remains the pinned first-time configuration path. It contains the 0.1.0 VSIX; install 0.1.2 afterward using the same six separate state-directory options in [the setup guide](docs/setup-r2.md). The existing 0.1.0 and 0.1.1 release assets remain unchanged.
 
