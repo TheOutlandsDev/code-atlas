@@ -7,6 +7,7 @@ from pathlib import Path
 import stat
 import tempfile
 import unittest
+from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -79,6 +80,119 @@ class ScanTests(unittest.TestCase):
         self.assertEqual(result['coverage']['programLinePendingFiles'], 1)
         self.assertFalse(result['coverage']['programLinesComplete'])
         self.assertTrue(result['coverage']['complete'])
+
+    def test_refresh_recounts_replaced_source_without_retaining_old_total(self):
+        file = self.write('main.py', 'pass\n' * 39)
+        self.assertEqual(self.result()['coverage']['programLines'], 39)
+        replacement = self.base / 'replacement.py'
+        replacement.write_text('pass\n' * 123)
+        replacement.replace(file)
+        result = self.result()
+        self.assertEqual(result['coverage']['programLines'], 123)
+        self.assertEqual(result['coverage']['programLinePendingFiles'], 0)
+        self.assertEqual(result['validation']['pending'], 0)
+        self.assertEqual(result['projects'][0]['validation']['syntaxPassed'], 1)
+
+    def test_regular_refuses_path_replacement_after_read(self):
+        file = self.write('main.py', 'pass\n')
+        replacement = self.base / 'replacement.py'
+        replacement.write_text('pass\n')
+        real_fstat = os.fstat
+        replaced = False
+        observations = 0
+
+        def replace_after_final_descriptor_check(fd):
+            nonlocal replaced, observations
+            info = real_fstat(fd)
+            observations += 1
+            if observations == 2:
+                replacement.replace(file)
+                replaced = True
+            return info
+
+        with mock.patch.object(scan.os, 'fstat', side_effect=replace_after_final_descriptor_check):
+            with self.assertRaises(ValueError):
+                scan.regular(file, 32)
+        self.assertTrue(replaced)
+
+    def test_regular_refuses_redirected_ancestor_after_read(self):
+        file = self.write('main.py', 'pass\n')
+        moved = self.base / 'moved-code'
+        real_read = os.read
+        redirected = False
+
+        def redirect_after_read(fd, size):
+            nonlocal redirected
+            data = real_read(fd, size)
+            if data and not redirected:
+                self.project.rename(moved)
+                self.project.symlink_to(moved, target_is_directory=True)
+                redirected = True
+            return data
+
+        with mock.patch.object(scan.os, 'read', side_effect=redirect_after_read):
+            with self.assertRaises(ValueError):
+                scan.regular(file, 32)
+        self.assertTrue(redirected)
+
+    def result_after_discovery_replacement(self, name, content):
+        file = self.project / name
+        replacement = self.base / 'replacement-source'
+        replacement.write_text(content)
+        scanner = scan.Scanner(scan.Policy(self.raw))
+        entries = scanner.entries
+        replaced = False
+
+        def replace_after_entries(directory):
+            nonlocal replaced
+            result = entries(directory)
+            if directory == str(self.project) and not replaced:
+                replacement.replace(file)
+                replaced = True
+            return result
+
+        with mock.patch.object(scanner, 'entries', side_effect=replace_after_entries):
+            result = scanner.run()
+        self.assertTrue(replaced)
+        return scanner, result
+
+    def test_changed_discovery_metadata_defers_both_count_and_parser(self):
+        self.write('main.py', 'pass\n')
+        scanner, result = self.result_after_discovery_replacement('main.py', 'pass\npass\n')
+        self.assertEqual(scanner.line_bytes, 0)
+        self.assertEqual(result['coverage']['programLines'], 0)
+        self.assertEqual(result['coverage']['programLinePendingFiles'], 1)
+        self.assertEqual(result['validation']['pending'], 1)
+        self.assertEqual(result['projects'][0]['validation']['syntaxPassed'], 0)
+
+    def test_grown_source_cannot_exceed_remaining_line_byte_budget(self):
+        self.write('style.css', 'one\n')
+        self.raw['maxLineCountBytes'] = 4
+        scanner, result = self.result_after_discovery_replacement('style.css', 'two\nthree\n')
+        self.assertEqual(scanner.line_bytes, 0)
+        self.assertEqual(result['coverage']['programLines'], 0)
+        self.assertEqual(result['coverage']['programLinePendingFiles'], 1)
+        self.assertFalse(result['coverage']['programLinesComplete'])
+
+    def test_same_size_replacement_does_not_reuse_discovery_identity(self):
+        self.write('style.css', 'old\n')
+        scanner, result = self.result_after_discovery_replacement('style.css', 'new\n')
+        self.assertEqual(scanner.line_bytes, 0)
+        self.assertEqual(result['coverage']['programLinePendingFiles'], 1)
+
+    def test_regular_empty_file_reads_no_bytes_at_zero_remaining_budget(self):
+        file = self.write('style.css', '')
+        with mock.patch.object(scan.os, 'read', side_effect=AssertionError('No read allowance')):
+            self.assertEqual(scan.regular(file, 0, expected=file.stat()), b'')
+
+    def test_zero_syntax_pending_does_not_establish_full_discovery(self):
+        self.write('a/main.py', 'pass\n')
+        self.raw['maxDirectories'] = 1
+        result = self.result()
+        self.assertEqual(result['validation']['pending'], 0)
+        self.assertTrue(result['coverage']['limited'])
+        self.assertFalse(result['coverage']['complete'])
+        self.assertFalse(result['coverage']['programLinesComplete'])
 
     def test_invalid_python_and_json_are_reported_without_diagnostic_content(self):
         self.write('main.py', 'def invalid(\n')

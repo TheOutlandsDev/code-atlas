@@ -30,7 +30,11 @@ def canonical(path, directory=None):
     return info
 
 
-def regular(path, maximum):
+def source_stamp(info):
+    return (info.st_dev, info.st_ino, info.st_size, info.st_mtime_ns, info.st_ctime_ns)
+
+
+def regular(path, maximum, expected=None):
     path = Path(path)
     before = canonical(path, False)
     fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
@@ -41,17 +45,24 @@ def regular(path, maximum):
         current = canonical(path, False)
         if (current.st_dev, current.st_ino) != (opened.st_dev, opened.st_ino):
             raise ValueError('File identity changed')
+        if expected is not None and source_stamp(opened) != source_stamp(expected):
+            raise ValueError('Source metadata changed since discovery')
         chunks = []
         total = 0
-        while total <= maximum:
-            chunk = os.read(fd, min(65536, maximum + 1 - total))
+        while total < maximum:
+            chunk = os.read(fd, min(65536, maximum - total))
             if not chunk:
                 break
             total += len(chunk)
             chunks.append(chunk)
         after = os.fstat(fd)
-        if total > maximum or (after.st_size, after.st_mtime_ns, after.st_ctime_ns) != (opened.st_size, opened.st_mtime_ns, opened.st_ctime_ns):
+        if source_stamp(after) != source_stamp(opened) or total != opened.st_size:
             raise ValueError('File changed')
+        # An unchanged descriptor is insufficient if the named file or one of
+        # its ancestors was replaced while the content was being read.
+        current = canonical(path, False)
+        if source_stamp(current) != source_stamp(opened) or os.path.realpath('/proc/self/fd/' + str(fd)) != str(path):
+            raise ValueError('Source path changed after read')
         return b''.join(chunks)
     finally:
         os.close(fd)
@@ -197,7 +208,7 @@ class Scanner:
             content = None
             if self.line_bytes + info.st_size <= self.max_line_bytes:
                 try:
-                    content = regular(file, self.max_bytes)
+                    content = regular(file, min(self.max_bytes, self.max_line_bytes - self.line_bytes), expected=info)
                     self.line_bytes += len(content)
                     if b'\0' in content:
                         row['programLineBinaryFiles'] += 1
@@ -213,7 +224,7 @@ class Scanner:
                 continue
             try:
                 if content is None:
-                    content = regular(file, self.max_bytes)
+                    content = regular(file, self.max_bytes, expected=info)
             except (OSError, ValueError):
                 validation['pending'] += 1
                 self.denied += 1

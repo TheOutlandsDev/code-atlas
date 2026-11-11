@@ -19,8 +19,34 @@ jobs:
           python-version: '3.12'
       - name: Install virtual-display capture prerequisites
         run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends xvfb openbox imagemagick libnss3 libgbm1 libxkbfile1 libsecret-1-0 libgtk-3-0 libasound2
+          set -euo pipefail
+          # Avoid the image's mirror-list indirection; keep TLS and Ubuntu signature checks.
+          apt_dir="$(mktemp -d /tmp/code-atlas-apt.XXXXXXXX)"
+          chmod 0755 "$apt_dir"
+          mkdir -m 0755 "$apt_dir/sources.list.d" "$apt_dir/lists"
+          cat > "$apt_dir/sources.list" <<'SOURCES'
+          deb [signed-by=/usr/share/keyrings/ubuntu-archive-keyring.gpg] https://archive.ubuntu.com/ubuntu jammy main universe
+          deb [signed-by=/usr/share/keyrings/ubuntu-archive-keyring.gpg] https://archive.ubuntu.com/ubuntu jammy-updates main universe
+          deb [signed-by=/usr/share/keyrings/ubuntu-archive-keyring.gpg] https://security.ubuntu.com/ubuntu jammy-security main universe
+          SOURCES
+          chmod 0644 "$apt_dir/sources.list"
+          test -r /usr/share/keyrings/ubuntu-archive-keyring.gpg
+          timeout 15s getent ahosts archive.ubuntu.com
+          timeout 15s getent ahosts security.ubuntu.com
+          apt_options=(
+            -o "Dir::Etc::sourcelist=$apt_dir/sources.list"
+            -o "Dir::Etc::sourceparts=$apt_dir/sources.list.d"
+            -o "Dir::State::lists=$apt_dir/lists"
+            -o APT::Update::Error-Mode=any
+            -o Acquire::Retries=0
+            -o Acquire::http::Timeout=30
+            -o Acquire::https::Timeout=30
+          )
+          sudo apt-get "${apt_options[@]}" update
+          sudo apt-get "${apt_options[@]}" install -y --no-install-recommends xvfb openbox imagemagick libnss3 libgbm1 libxkbfile1 libsecret-1-0 libgtk-3-0 libasound2
+          for required in Xvfb xvfb-run xauth openbox import; do
+            command -v "$required"
+          done
       - name: Exercise installed extension on first launch and restart
         run: >-
           xvfb-run -a -s "-screen 0 1920x1440x24"
