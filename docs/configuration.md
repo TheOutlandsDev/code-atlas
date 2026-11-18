@@ -77,6 +77,8 @@ In the trusted dashboard workspace, the map opens automatically and requests a m
 
 The portable scanner parses Python with the Python runtime's AST parser and JSON with the standard JSON parser. Other recognized languages remain available for browsing without bundled syntax validation. Python syntax support follows the installed scanner interpreter; JSON parsing does not add JSON-with-comments support. Use the project's own tools for authoritative language, lint, type, build, and test checks.
 
+Each portable refresh is a new bounded walk. This edition has no retained discovery frontier or stale-result revalidation queue, and `cacheEntries` remains zero. Repeated refreshes can hit the same limit on a large tree; select narrower explicit roots rather than treating elapsed time or zero pending syntax checks as proof of coverage. Review the separate coverage and line-count completion flags. [Line-count semantics](line-counts.md) explain how changed source identities remain pending for a later stable scan.
+
 ## Optional reviewed workspace
 
 Add an entry only after inspecting the target workspace:

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.3 — source candidate
+
+- Bind source line counts and static parsing to the file metadata observed during discovery. A file replaced or changed during a scan stays pending rather than combining new contents with an old source identity.
+- Recheck the file path and descriptor after reading, including ancestor changes, and keep source reads within the remaining line-byte allowance.
+- Recount replaced files on the next fresh scan and cover source replacement, growth, zero-byte reads and partial-coverage reporting with synthetic regressions.
+- Explain that zero queued syntax checks does not establish full discovery. This portable scanner performs a fresh bounded walk; it does not include deployment-specific cache revalidation, service inventory or aggregate test execution.
+- Keep the published 0.1.2 release and the pinned setup bundle unchanged. Version 0.1.3 identifies the new source candidate until a separate release is published.
+
 ## 0.1.2
 
 - Show bounded physical source line counts in the map and project details. Mark totals as partial when the read budget leaves files pending.
