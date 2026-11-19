@@ -1,0 +1,20 @@
+{
+  "name": "code-atlas-upgrade-harness",
+  "displayName": "Code Atlas disposable upgrade harness",
+  "version": "0.0.0",
+  "publisher": "local-acceptance",
+  "license": "MIT",
+  "main": "./extension.cjs",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "engines": {
+    "vscode": "^1.100.0"
+  },
+  "description": "Local test host only; no project execution or production integration.",
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": true
+    }
+  }
+}
