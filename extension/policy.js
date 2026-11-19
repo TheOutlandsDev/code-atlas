@@ -64,7 +64,12 @@ class Policy {
     if (checkDisk) canonical(root, true);
     return root;
   }
-  language(file) { return this.manifests[path.basename(file)] || this.extensions[path.extname(file)] || null; }
+  language(file) {
+    const suffix = path.extname(file);
+    const language = Object.hasOwn(this.extensions, suffix) ? this.extensions[suffix] :
+      this.extensions[suffix.toLowerCase()];
+    return this.manifests[path.basename(file)] || language || null;
+  }
   resolve(root, rel = '', directory) {
     this.authorizeRoot(root, false); relative(rel, true);
     const file = rel ? root + '/' + rel : root;

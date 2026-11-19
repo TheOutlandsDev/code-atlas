@@ -97,7 +97,8 @@ class Policy:
         return any(part.startswith('.') or part.lower() in self.names or any(pattern.search(part) for pattern in self.patterns) for part in Path(value).relative_to(base).parts)
 
     def language(self, name):
-        return self.manifests.get(name) or self.extensions.get(Path(name).suffix)
+        suffix = Path(name).suffix
+        return self.manifests.get(name) or self.extensions.get(suffix, self.extensions.get(suffix.lower()))
 
     def limit(self, name, ceiling):
         value = self.raw.get(name, ceiling)
