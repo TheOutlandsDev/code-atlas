@@ -4,21 +4,19 @@
 
 Code Atlas turns explicitly selected development folders into a language network and a searchable project list. Browse source in read-only editor tabs, keep projects in their existing locations, and jump to separately reviewed test workspaces when you are ready to work.
 
-This first portable release targets **Linux**, **VS Code 1.100 or newer**, and **Python 3.10 or newer**. It uses the VS Code extension host and Python standard library; it has no runtime npm dependencies and does not need an account or hosted service.
+Code Atlas targets **Linux**, **VS Code 1.100 or newer**, and **Python 3.10 or newer**. It uses the VS Code extension host and Python standard library; it has no runtime npm dependencies and does not need an account or hosted service.
 
-## Source candidate 0.1.3
+## Published version 0.1.3
 
-The current source candidate binds line counts and static checks to the file identity observed during discovery, rechecks paths after reading, and leaves changed files pending for a fresh scan. See [line-count and freshness semantics](docs/line-counts.md). The portable scanner starts a new bounded walk on each refresh; it does not inherit deployment-specific cache revalidation or runtime inventory features. Source availability and passing synthetic tests do not establish a published installer or native acceptance for this candidate.
+Code Atlas now recognizes mixed-case extensions and gives exact manifest names and explicitly configured suffixes priority. Source line counts and static checks stay tied to the file observed during discovery. Files that change during a scan stay pending until the next scan, and the map marks incomplete counts as partial. [Release notes and downloads](https://github.com/TheOutlandsDev/code-atlas/releases/tag/v0.1.3) · [Line counts and freshness](docs/line-counts.md)
 
-## Published version 0.1.2
-
-[The 0.1.2 VSIX](https://github.com/TheOutlandsDev/code-atlas/releases/tag/v0.1.2) adds bounded physical source line counts to the map and project details, with a clear partial marker when the read budget is exhausted. It also includes the 0.1.1 queued-refresh fix. Verify the VSIX with `SHA256SUMS-0.1.2`. The [revision 2 setup bundle](https://github.com/TheOutlandsDev/code-atlas/releases/tag/v0.1.0) remains the pinned first-time configuration path. It contains the 0.1.0 VSIX; install 0.1.2 afterward using the same six separate state-directory options in [the setup guide](docs/setup-r2.md). The existing 0.1.0 and 0.1.1 release assets remain unchanged.
+For a new setup, use the revision 2 configuration helper. For an upgrade, reuse your existing Code Atlas configuration and the same six VS Code state directories. Both paths install the same checksum-verified 0.1.3 VSIX. [Install and upgrade instructions](#install-or-upgrade-to-013)
 
 ## See the map
 
-[![Native published VSIX acceptance](https://github.com/TheOutlandsDev/code-atlas/actions/workflows/native-acceptance.yml/badge.svg?branch=main)](https://github.com/TheOutlandsDev/code-atlas/actions/workflows/native-acceptance.yml)
+[![Native v0.1.0 VSIX acceptance](https://github.com/TheOutlandsDev/code-atlas/actions/workflows/native-acceptance.yml/badge.svg?branch=main)](https://github.com/TheOutlandsDev/code-atlas/actions/workflows/native-acceptance.yml)
 
-**The published extension now has reproducible native Linux checks.** VS Code 1.143.0 passed 38 first-launch, 39 restart and 12 Restricted Mode control assertions using generated source files. [Inspect the results and reproduce the check](https://github.com/TheOutlandsDev/code-atlas/blob/main/docs/native-acceptance.md).
+**The pinned 0.1.0 setup release has reproducible native Linux checks.** VS Code 1.143.0 passed 38 first-launch, 39 restart and 12 Restricted Mode control assertions using generated source files. [Native test results and upgrade workflow](docs/native-acceptance.md)
 
 ![Actual Code Atlas 0.1.0 running in Linux VS Code with generated Python, Rust and TypeScript projects](https://raw.githubusercontent.com/TheOutlandsDev/code-atlas/main/docs/evidence/native-linux-map.png)
 
@@ -43,14 +41,14 @@ actual Linux/VS Code extension.
 | Your input | An existing project directory you own and explicitly choose; there are no default source roots. |
 | Status | Linux preview. Source availability and static syntax metadata are separate from build, runtime and project-test results. |
 
-Check the two runtime versions before following the [complete revision 2 setup guide](docs/setup-r2.md):
+Check both runtime versions before configuring the dedicated Code Atlas instance.
 
 ```sh
 code --version
 /usr/bin/python3 --version
 ```
 
-Use the [revision 2 download and checksum steps below](#quick-start--setup-revision-2), then keep all six state-directory options from the setup guide on both install and launch. In that reviewed VS Code instance, choose **OUTLANDS: Open Code Map**, select a language or search for a project, then choose **Browse source files**. The [release checks](docs/release-checks.md) describe the recorded checks and their scope.
+Keep all six state-directory options when installing and launching the dedicated instance. In that instance, choose **OUTLANDS: Open Code Map**, select a language or search for a project, then choose **Browse source files**. [Install and upgrade instructions](#install-or-upgrade-to-013) · [Release checks](docs/release-checks.md)
 
 ## What it does
 
@@ -73,28 +71,65 @@ flowchart LR
     F --> G[Your manually invoked tools]
 ```
 
-## Quick start — setup revision 2
+## Install or upgrade to 0.1.3
 
-Use the tested release setup rather than installing into an existing IDE profile:
+For an existing installation, close its dedicated Code Atlas window and use the same `CODE_ATLAS_HOME` and all six profile directories you used before. Export that `CODE_ATLAS_HOME` in your terminal, then go directly to [installing the published VSIX](#install-the-published-vsix).
+
+### First-time configuration with setup revision 2
 
 - [Download the revision 2 setup ZIP](https://github.com/TheOutlandsDev/code-atlas/releases/download/v0.1.0/code-atlas-0.1.0-setup-r2.zip)
 - [Download SHA256SUMS-r2](https://github.com/TheOutlandsDev/code-atlas/releases/download/v0.1.0/SHA256SUMS-r2)
-- [Follow the complete revision 2 setup guide](docs/setup-r2.md)
+- [Read the pinned revision 2 setup guide](docs/setup-r2.md)
 
-From the download folder, verify and extract the bundle:
+From the download directory, verify the ZIP before extracting it. Check that the ZIP and all six payload files report **OK**.
 
 ```sh
-sha256sum --check --ignore-missing SHA256SUMS-r2
-unzip code-atlas-0.1.0-setup-r2.zip
-cd code-atlas-0.1.0-setup-r2
-sha256sum --check SHA256SUMS
+sha256sum --check --ignore-missing SHA256SUMS-r2 &&
+  unzip code-atlas-0.1.0-setup-r2.zip &&
+  cd code-atlas-0.1.0-setup-r2 &&
+  sha256sum --check SHA256SUMS
 ```
 
-Confirm the ZIP is **OK** before extracting it and all six bundled payload files are **OK** afterward. Follow [the setup guide](docs/setup-r2.md) to configure explicit roots and install/launch with separate user-data, extension, **shared-data** and agent/plugin directories. The complete CLI recipe was verified on **VS Code 1.143.0**; the extension's minimum remains 1.100. Stop if another build warns about unknown options or rejects them.
+In the extracted directory, choose a new configuration home outside your sources. Replace the example source path with an existing project directory you own. Repeat `--root` for additional roots.
 
-The default private configuration home is `~/.code-atlas`. The setup tool refuses broad roots or an existing configuration. Set a new `CODE_ATLAS_HOME` outside your sources for a separate experiment and keep the same complete state-directory options on install and launch. Configuration and environment details are in [configuration](docs/configuration.md).
+```sh
+export CODE_ATLAS_HOME="$HOME/.code-atlas"
+/usr/bin/python3 -I -B tools/configure.py --root "/absolute/path/to/your/projects"
+```
 
-Keep workspace trust enabled and inspect the workspace and extension before trusting them. An empty dashboard can already be trusted; this alone does not mean trust is disabled. In VS Code, choose **OUTLANDS: Open Code Map** from the Command Palette or use the **Code Atlas** Explorer view. **Refresh map** requests another bounded scan.
+The setup helper refuses broad roots and existing configuration directories. Use the upgrade path when you already have a reviewed configuration. [Configuration and limits](docs/configuration.md)
+
+### Install the published VSIX
+
+Download `code-atlas-0.1.3.vsix` and `SHA256SUMS-0.1.3` into the same folder. In the terminal with your chosen `CODE_ATLAS_HOME` exported, change to that download folder. [VSIX](https://github.com/TheOutlandsDev/code-atlas/releases/download/v0.1.3/code-atlas-0.1.3.vsix) · [SHA256SUMS-0.1.3](https://github.com/TheOutlandsDev/code-atlas/releases/download/v0.1.3/SHA256SUMS-0.1.3)
+
+The helper below passes the same six directories on installation, version readback and launch. It uses the revision 2 directory names. If you customized your profile paths, use the same exact paths as your previous installation. These options were verified with VS Code 1.143.0. If another build rejects an option or reports it unknown, check that build's support before proceeding.
+
+```sh
+atlas_code() {
+  command code --user-data-dir "$CODE_ATLAS_HOME/vscode-user" \
+    --extensions-dir "$CODE_ATLAS_HOME/vscode-extensions" \
+    --shared-data-dir "$CODE_ATLAS_HOME/vscode-shared" \
+    --agent-plugins-dir "$CODE_ATLAS_HOME/agent-plugins" \
+    --agents-user-data-dir "$CODE_ATLAS_HOME/agents-user" \
+    --agents-extensions-dir "$CODE_ATLAS_HOME/agents-extensions" \
+    "$@"
+}
+
+test -n "${CODE_ATLAS_HOME:-}" &&
+  test -f "$CODE_ATLAS_HOME/Atlas.code-workspace" &&
+  sha256sum --check SHA256SUMS-0.1.3 &&
+  atlas_code --install-extension "$PWD/code-atlas-0.1.3.vsix" &&
+  atlas_code --list-extensions --show-versions
+```
+
+After the checksum reports **OK** and the extension list shows `TheOutlandsDev.code-atlas@0.1.3`, launch from that same terminal.
+
+```sh
+atlas_code --sync off --new-window "$CODE_ATLAS_HOME/Atlas.code-workspace"
+```
+
+Keep workspace trust enabled. Inspect the workspace and extension, then trust only the workspace and folders you reviewed. Choose **OUTLANDS: Open Code Map** from the Command Palette or use the **Code Atlas** Explorer view. **Refresh map** requests a new bounded scan.
 
 ## Find a project
 
@@ -124,13 +159,14 @@ python3 -I -B tools/package.py
 
 The check command runs the Python, extension-core, and map DOM suites, plus offline release/documentation checks and a temporary synthetic setup/scan workflow. That workflow exercises the real setup helper and scanner with Python, Rust and TypeScript fixtures, checks refresh after a Go project is created and deleted, and verifies original sample files stay unchanged. It runs no project code or project tests.
 
-The [native acceptance workflow](https://github.com/TheOutlandsDev/code-atlas/blob/main/docs/native-acceptance.md) separately installs the pinned published VSIX, starts the exact Linux editor, verifies real API behavior and restart persistence, and captures the rendered window. It keeps manual desktop controls separate.
+Native acceptance covers the pinned 0.1.0 setup release, the VSIX built from a pull request, and the published 0.1.2 to 0.1.3 upgrade. Each check uses generated source files in a dedicated Linux VS Code profile. [Native acceptance and workflow instructions](docs/native-acceptance.md)
 
 The [release checks](docs/release-checks.md) also verify the pinned public ZIP and checksums in GitHub Actions, then repeat the setup/scan workflow using the helper from that ZIP and scanner from the released VSIX. They do not start VS Code or inspect private roots. A passing suite is not a claim that arbitrary projects build, that every filesystem race is prevented, or that an installed VS Code window has completed a manual acceptance check.
 
 Packaging is offline and uses an explicit runtime allowlist. It refuses to overwrite an existing VSIX; preserve an earlier artifact or use a clean checkout before packaging again. Building a VSIX does not publish it to the VS Code Marketplace. A development build from a changed checkout can have different bytes from the pinned published installer; release checks validate the published artifact separately.
 
-- [Current revision 2 setup](docs/setup-r2.md)
+- [Install or upgrade to 0.1.3](#install-or-upgrade-to-013)
+- [Pinned revision 2 setup guide](docs/setup-r2.md)
 - [Native Linux acceptance and screenshots](https://github.com/TheOutlandsDev/code-atlas/blob/main/docs/native-acceptance.md)
 - [Automated release checks](docs/release-checks.md)
 - [Configuration and limits](docs/configuration.md)
