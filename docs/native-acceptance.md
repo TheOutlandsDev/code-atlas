@@ -72,10 +72,21 @@ The candidate workflow builds and tests the pull request's own VSIX with generat
 
 **Native published VSIX upgrade** verifies the public v0.1.2 and v0.1.3 VSIX packages against the pinned SHA-256 digests and their published checksums. It installs both versions in sequence in one disposable Linux VS Code 1.143.0 profile. The test uses synthetic files and runs the installed extension through VS Code's native APIs on a virtual display.
 
-Run the workflow from GitHub once it is on `main`.
+Run the workflow from `main` in GitHub Actions.
 
 1. Go to **Actions** and select **Native published VSIX upgrade**. [Workflow](https://github.com/TheOutlandsDev/code-atlas/actions/workflows/published-upgrade.yml)
 2. Select **Run workflow**, choose `main`, and start the run.
 3. Open the completed upgrade job and download the `code-atlas-published-upgrade` artifact for the synthetic receipt. Check the overall result, VS Code version, VSIX versions and SHA-256 digests, and the results for the baseline, upgrade and restart phases.
 
 The check verifies that the pre-upgrade catalog persists through installation, then rescans after upgrading. Expect `mixed.pY` and `settings.JsOn` to appear, the exact custom `.PY` mapping to retain priority, and the same configuration, project identity and read-only content to persist after restart. The receipt documents automated native API behavior on the pinned Linux editor. For a manual installation on your own machine, follow the current release instructions. [Install or upgrade to 0.1.3](../README.md#install-or-upgrade-to-013)
+
+### Verified run from main
+
+Manual run #2 passed **69/69 native assertions** on `main` at `f71a291`. It verified the published v0.1.2 to v0.1.3 upgrade with synthetic files in one Linux VS Code 1.143.0 profile. [Passing manual run #2](https://github.com/TheOutlandsDev/code-atlas/actions/runs/44605655822)
+
+| Phase | Assertions passed |
+| --- | ---: |
+| Restricted Mode | 5/5 |
+| v0.1.2 baseline | 18/18 |
+| First v0.1.3 launch | 23/23 |
+| v0.1.3 restart | 23/23 |
